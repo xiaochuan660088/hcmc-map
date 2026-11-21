@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <title>胡志明市旧郡地图 · Bản đồ các quận cũ TP.HCM</title>
+  <title>胡志明地图 · Bản đồ TP.HCM</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -94,7 +94,9 @@
       color: #1a1a1a; font-weight: 700; line-height: 1.15;
     }
     /* District names: size follows zoom; soft shadow + slight transparency so streets underneath stay readable */
-    .district-label { transition: font-size .15s ease, opacity .15s ease; white-space: nowrap !important; }
+    .map-label { background: none; border: 0; overflow: visible; }
+    .map-label .lbl { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); white-space: nowrap; text-align: center; }
+    .district-label { transition: opacity .15s ease; white-space: nowrap !important; }
     .district-label .zh, .district-label .vi { white-space: nowrap; }
     .district-label .zh {
       color: rgba(20, 20, 20, .82);
@@ -107,11 +109,11 @@
       display: flex; flex-direction: column; align-items: center;
     }
     .district-label .vi, .ward-label .vi, .rural-label .vi {
-      display: none; font-weight: 600; font-size: 10px; color: #222;
+      display: none; font-weight: 600; font-size: .62em; color: #222;
     }
     .district-label.show-vi .vi, .ward-label.show-vi .vi, .rural-label.show-vi .vi { display: block; }
-    .ward-label { font-size: 10px; font-weight: 600; color: #14394d; }
-    .rural-label { font-size: 11px; color: #444; opacity: .9; }
+    .ward-label { font-weight: 600; color: #14394d; }
+    .rural-label { color: #444; opacity: .9; }
     .airport-label {
       white-space: nowrap !important;
       font-size: 11px; color: #8a1c1c; font-weight: 700;
@@ -167,7 +169,7 @@
   <div id="map"></div>
   <aside class="panel" id="panel">
     <button class="collapse-btn" id="collapseBtn" title="折叠/展开" aria-label="折叠面板">▾</button>
-    <h1 id="panelTitle">胡志明市旧郡地图</h1>
+    <h1 id="panelTitle">胡志明地图</h1>
     <div class="panel-body">
       <p class="sub">旧城区行政界线（2021 年合并前）：第 1–12 郡仍各自独立，守德、第 2、第 9 郡尚未合并为守德市。2025 年 7 月起越南已取消郡级建制，本图保留旧界，供房地产区位对照。</p>
       <div class="toolbar">
@@ -260,6 +262,9 @@
       "Google 混合图": baseHybrid,
       "OpenStreetMap": baseOsm
     };
+    map.createPane("labels");
+    map.getPane("labels").style.zIndex = 450;
+    map.getPane("labels").style.pointerEvents = "none";
     L.control.layers(baseMaps, null, { position: "topright", collapsed: true }).addTo(map);
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
 
@@ -308,44 +313,163 @@
       };
     }
 
+    // ---------- Labels: placed at the visual centre (pole of inaccessibility) and sized to always fit inside the shape ----------
+    const LABELS = [];
+    const measureCtx = document.createElement("canvas").getContext("2d");
+    function textW(txt, weight) {
+      measureCtx.font = `${weight} 100px "Noto Sans SC", "Be Vietnam Pro", "PingFang SC", sans-serif`;
+      return measureCtx.measureText(txt).width / 100; // width per 1px of font size
+    }
+    function polygonsOf(geom) {
+      return geom.type === "Polygon" ? [geom.coordinates] : geom.coordinates;
+    }
+    function ringArea(r) { let a = 0; for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += (r[j][0] + r[i][0]) * (r[j][1] - r[i][1]); return a / 2; }
+    // polylabel (Mapbox algorithm), coordinates scaled so x/y distances are comparable
+    function polylabel(poly, precision) {
+      const k = Math.cos(poly[0][0][1] * Math.PI / 180);
+      const P = poly.map(r => r.map(c => [c[0] * k, c[1]]));
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const c of P[0]) { minX = Math.min(minX, c[0]); minY = Math.min(minY, c[1]); maxX = Math.max(maxX, c[0]); maxY = Math.max(maxY, c[1]); }
+      const segDist2 = (px, py, a, b) => { let x = a[0], y = a[1], dx = b[0] - x, dy = b[1] - y; if (dx || dy) { const t = ((px - x) * dx + (py - y) * dy) / (dx * dx + dy * dy); if (t > 1) { x = b[0]; y = b[1]; } else if (t > 0) { x += dx * t; y += dy * t; } } dx = px - x; dy = py - y; return dx * dx + dy * dy; };
+      const dist = (x, y) => { let inside = false, m = Infinity; for (const r of P) for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const a = r[i], b = r[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside; m = Math.min(m, segDist2(x, y, a, b)); } return (inside ? 1 : -1) * Math.sqrt(m); };
+      const cell = (x, y, h) => { const d = dist(x, y); return { x, y, h, d, max: d + h * Math.SQRT2 }; };
+      const size = Math.min(maxX - minX, maxY - minY); let h = size / 2;
+      if (size === 0) return [minX / k, minY];
+      const q = [];
+      for (let x = minX; x < maxX; x += size) for (let y = minY; y < maxY; y += size) q.push(cell(x + h, y + h, h));
+      let best = cell((minX + maxX) / 2, (minY + maxY) / 2, 0);
+      while (q.length) {
+        q.sort((a, b) => b.max - a.max); const c = q.shift();
+        if (c.d > best.d) best = c;
+        if (c.max - best.d <= precision) continue;
+        h = c.h / 2; q.push(cell(c.x - h, c.y - h, h), cell(c.x + h, c.y - h, h), cell(c.x - h, c.y + h, h), cell(c.x + h, c.y + h, h));
+      }
+      return [best.x / k, best.y];
+    }
+    function polylabelXY(P, precision) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const c of P[0]) { minX = Math.min(minX, c[0]); minY = Math.min(minY, c[1]); maxX = Math.max(maxX, c[0]); maxY = Math.max(maxY, c[1]); }
+      const segDist2 = (px, py, a, b) => { let x = a[0], y = a[1], dx = b[0] - x, dy = b[1] - y; if (dx || dy) { const t = ((px - x) * dx + (py - y) * dy) / (dx * dx + dy * dy); if (t > 1) { x = b[0]; y = b[1]; } else if (t > 0) { x += dx * t; y += dy * t; } } dx = px - x; dy = py - y; return dx * dx + dy * dy; };
+      const dist = (x, y) => { let inside = false, m = Infinity; for (const r of P) for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const a = r[i], b = r[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside; m = Math.min(m, segDist2(x, y, a, b)); } return (inside ? 1 : -1) * Math.sqrt(m); };
+      const cell = (x, y, h) => { const d = dist(x, y); return { x, y, h, d, max: d + h * Math.SQRT2 }; };
+      const size = Math.min(maxX - minX, maxY - minY); let h = size / 2;
+      if (!(size > 0)) return null;
+      const q = [];
+      for (let x = minX; x < maxX; x += size) for (let y = minY; y < maxY; y += size) q.push(cell(x + h, y + h, h));
+      let best = cell((minX + maxX) / 2, (minY + maxY) / 2, 0);
+      let guard = 0;
+      while (q.length && guard++ < 4000) {
+        q.sort((a, b) => b.max - a.max); const c = q.shift();
+        if (c.d > best.d) best = c;
+        if (c.max - best.d <= precision) continue;
+        h = c.h / 2; q.push(cell(c.x - h, c.y - h, h), cell(c.x + h, c.y - h, h), cell(c.x - h, c.y + h, h), cell(c.x + h, c.y + h, h));
+      }
+      return best.d > 0 ? { x: best.x, y: best.y, r: best.d } : null;
+    }
+    // clip a ring of {x,y} to a rectangle (Sutherland–Hodgman)
+    function clipRing(ring, x0, y0, x1, y1) {
+      let out = ring;
+      const edges = [
+        [p => p.x >= x0, (a, b) => ({ x: x0, y: a.y + (b.y - a.y) * (x0 - a.x) / (b.x - a.x) })],
+        [p => p.x <= x1, (a, b) => ({ x: x1, y: a.y + (b.y - a.y) * (x1 - a.x) / (b.x - a.x) })],
+        [p => p.y >= y0, (a, b) => ({ x: a.x + (b.x - a.x) * (y0 - a.y) / (b.y - a.y), y: y0 })],
+        [p => p.y <= y1, (a, b) => ({ x: a.x + (b.x - a.x) * (y1 - a.y) / (b.y - a.y), y: y1 })],
+      ];
+      for (const [inside, cut] of edges) {
+        const inp = out; out = [];
+        if (!inp.length) break;
+        for (let i = 0; i < inp.length; i++) {
+          const cur = inp[i], prev = inp[(i + inp.length - 1) % inp.length];
+          const ci = inside(cur), pi = inside(prev);
+          if (ci) { if (!pi) out.push(cut(prev, cur)); out.push(cur); }
+          else if (pi) out.push(cut(prev, cur));
+        }
+      }
+      return out;
+    }
+    function viewRect() {
+      const sz = map.getSize();
+      const panelEl = document.getElementById("panel");
+      const pr = panelEl.getBoundingClientRect();
+      let l = 8, t = 8, r = 8, b = 8;
+      if (window.innerWidth <= 640) { b = sz.y - pr.top + 36; t = 8; }
+      else if (!panelEl.classList.contains("collapsed")) { l = pr.right + 8; }
+      else { t = pr.bottom + 4; }
+      const a = map.containerPointToLayerPoint([l, t]), c = map.containerPointToLayerPoint([sz.x - r, sz.y - b]);
+      return [a.x, a.y, c.x, c.y];
+    }
     function bindLabel(layer, feature, className, minZoom) {
       const p = feature.properties;
+      const polys = polygonsOf(feature.geometry);
+      const main = polys.reduce((a, b) => Math.abs(ringArea(b[0])) > Math.abs(ringArea(a[0])) ? b : a);
+      const c = polylabel(main, 0.0002);
+      const anchor = L.latLng(c[1], c[0]);
       const html = `<div class="lbl"><span class="zh">${p.name_zh}</span><span class="vi">${p.name_vi}</span></div>`;
-      layer.bindTooltip(html, {
-        permanent: true,
-        direction: "center",
-        className,
-        offset: [0, 0],
+      const marker = L.marker(anchor, {
+        icon: L.divIcon({ className: "map-label " + className, html, iconSize: [0, 0] }),
+        interactive: false, keyboard: false, pane: "labels",
       });
-      layer._labelMinZoom = minZoom || 0;
-      layer._labelArea = p.area_km2 || 99;
+      LABELS.push({
+        layer, marker, anchor, rings: main, minZoom: minZoom || 0, cls: className,
+        wZh: textW(p.name_zh, 700) * 1.03, wVi: textW(p.name_vi, 600),
+      });
     }
-
+    // does an axis-aligned pixel box sit fully inside the projected polygon?
+    function boxInside(pts, x0, y0, x1, y1) {
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      let inside = false;
+      for (const r of pts) for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+        const a = r[i], b = r[j];
+        if ((a.y > cy) !== (b.y > cy) && cx < (b.x - a.x) * (cy - a.y) / (b.y - a.y) + a.x) inside = !inside;
+      }
+      if (!inside) return false;
+      for (const r of pts) for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+        const a = r[i], b = r[j];
+        if (Math.max(a.x, b.x) < x0 || Math.min(a.x, b.x) > x1 || Math.max(a.y, b.y) < y0 || Math.min(a.y, b.y) > y1) continue;
+        if (a.x >= x0 && a.x <= x1 && a.y >= y0 && a.y <= y1) return false;
+        // segment vs the 4 box edges
+        const hit = (p1, p2, p3, p4) => { const d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x); if (!d) return false; const t = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d, u = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d; return t >= 0 && t <= 1 && u >= 0 && u <= 1; };
+        const A = { x: x0, y: y0 }, B = { x: x1, y: y0 }, C = { x: x1, y: y1 }, D = { x: x0, y: y1 };
+        if (hit(a, b, A, B) || hit(a, b, B, C) || hit(a, b, C, D) || hit(a, b, D, A)) return false;
+      }
+      return true;
+    }
     function refreshLabelVisibility() {
       const z = map.getZoom();
-      const showVi = z >= 13.4;
-      map.eachLayer(layer => {
-        if (layer.getTooltip && layer._labelMinZoom != null) {
-          const t = layer.getTooltip();
-          if (!t) return;
-          const el = t.getElement && t.getElement();
-          if (!el) return;
-          const minZ = layer._labelMinZoom;
-          // Tiny central districts: Chinese only until a closer zoom
-          const area = layer._labelArea;
-          const extra = (minZ < 13 && area < 8) ? 0.4 : 0;
-          el.style.display = z >= (minZ + extra) ? "" : "none";
-          el.classList.toggle("show-vi", showVi);
-          if (el.classList.contains("district-label")) {
-            // Font grows with zoom; larger districts get bigger names
-            const areaFactor = Math.min(1.7, Math.max(0.85, Math.sqrt(area / 20)));
-            const base = 12 + Math.max(0, z - 11) * 5;
-            const mobile = window.innerWidth <= 640 ? 0.88 : 1;
-            el.style.fontSize = Math.min(56, base * areaFactor * mobile).toFixed(1) + "px";
-            el.classList.toggle("far-in", z >= 15);
-          }
-        }
-      });
+      const mobile = window.innerWidth <= 640;
+      const VR = viewRect();
+      for (const L0 of LABELS) {
+        const on = map.hasLayer(L0.layer) && z >= L0.minZoom;
+        if (!on) { if (map.hasLayer(L0.marker)) map.removeLayer(L0.marker); continue; }
+        const full = map.latLngToLayerPoint([L0.rings[0][0][1], L0.rings[0][0][0]]) && L0.rings.map(r => r.map(c => map.latLngToLayerPoint([c[1], c[0]])));
+        const [vx0, vy0, vx1, vy1] = VR;
+        const outer = clipRing(full[0], vx0, vy0, vx1, vy1);
+        if (outer.length < 3) { if (map.hasLayer(L0.marker)) map.removeLayer(L0.marker); continue; }
+        const pts = [outer].concat(full.slice(1));
+        const best = polylabelXY(pts.map(r => r.map(p => [p.x, p.y])), 1);
+        if (!best) { if (map.hasLayer(L0.marker)) map.removeLayer(L0.marker); continue; }
+        const ap = L.point(best.x, best.y);
+        L0.marker.setLatLng(map.layerPointToLatLng(ap));
+        const isD = L0.cls === "district-label";
+        let fs = isD ? Math.min(54, 15 + Math.max(0, z - 11) * 6) : (L0.cls === "ward-label" ? Math.min(30, 11 + Math.max(0, z - 13) * 4) : Math.min(34, 12 + Math.max(0, z - 10) * 4));
+        if (mobile) fs *= 0.92;
+        const minFs = mobile ? 10 : 9, pad = 3;
+        const fits = (f, withVi) => {
+          const w = Math.max(L0.wZh * f, withVi ? L0.wVi * f * 0.62 : 0) + pad * 2;
+          const h = f * 1.18 * (withVi ? 1.62 : 1) + pad * 2;
+          return boxInside(pts, ap.x - w / 2, ap.y - h / 2, ap.x + w / 2, ap.y + h / 2);
+        };
+        let withVi = z >= 13.4, ok = false;
+        for (let f = fs; f >= minFs; f *= 0.92) { if (fits(f, withVi)) { fs = f; ok = true; break; } }
+        if (!ok && withVi) { withVi = false; for (let f = fs; f >= minFs; f *= 0.92) { if (fits(f, false)) { fs = f; ok = true; break; } } }
+        if (!ok) { if (map.hasLayer(L0.marker)) map.removeLayer(L0.marker); continue; }
+        if (!map.hasLayer(L0.marker)) L0.marker.addTo(map);
+        const el = L0.marker.getElement();
+        if (!el) continue;
+        el.style.fontSize = fs.toFixed(1) + "px";
+        el.classList.toggle("show-vi", withVi);
+        el.classList.toggle("far-in", isD && z >= 15);
+      }
     }
 
     const urbanLayer = L.geoJSON(urban, {
@@ -412,9 +536,10 @@
     }
     fitUrban();
 
-    map.on("zoomend", refreshLabelVisibility);
+    map.on("moveend", refreshLabelVisibility);
     window.addEventListener("resize", refreshLabelVisibility);
     map.whenReady(refreshLabelVisibility);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshLabelVisibility);
     setTimeout(refreshLabelVisibility, 300);
 
     const togDistricts = document.getElementById("togDistricts");
@@ -451,6 +576,7 @@
       const c = panel.classList.contains("collapsed");
       document.getElementById("collapseBtn").textContent = IS_MOBILE ? (c ? "▴" : "▾") : (c ? "▸" : "▾");
       if (!c) panel.scrollTop = 0;
+      setTimeout(refreshLabelVisibility, 30);
     }
     document.getElementById("collapseBtn").addEventListener("click", togglePanel);
     if (IS_MOBILE) {
