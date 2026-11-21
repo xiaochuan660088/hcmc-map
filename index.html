@@ -236,6 +236,58 @@
       display: inline-block; padding: 2px 7px; border-radius: 999px;
       font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 6px;
     }
+    .popup-intro {
+      margin: 0 0 8px; padding: 6px 8px; border-radius: 7px;
+      background: #f4f7fa; border-left: 3px solid var(--c, #0b6e99);
+      font-size: 12px; line-height: 1.45; color: #24303c;
+    }
+    .popup-source { display: inline-block; margin-top: 5px; font-size: 11px; }
+    .popup-near {
+      margin: 7px 0 0; padding-top: 6px; border-top: 1px dashed #d8dee6;
+      font-size: 11.5px; line-height: 1.5; color: #334155;
+    }
+    .popup-near-title { font-weight: 700; color: #1e293b; margin-bottom: 3px; font-size: 11.5px; }
+    .popup-near-row { display: flex; align-items: baseline; gap: 5px; margin: 2px 0; }
+    .popup-near-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex: 0 0 7px;
+      position: relative; top: -1px;
+    }
+    /* Secondary POI markers & labels */
+    .poi-marker, .poi-lbl-wrap { background: none; border: 0; overflow: visible; }
+    .poi-badge {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--pc, #ea580c); color: #fff;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.38), 0 0 0 1px rgba(0,0,0,.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform .15s ease, opacity .15s ease;
+    }
+    .poi-marker.poi-overlap { visibility: hidden; }
+    .poi-badge svg { width: 12px; height: 12px; display: block; }
+    .poi-marker:hover .poi-badge { transform: scale(1.18); }
+    #map.poi-compact .poi-badge { transform: scale(.76); opacity: .88; }
+    #map.poi-compact .poi-marker:hover .poi-badge { transform: scale(1.06); opacity: 1; }
+    .poi-lbl-wrap { pointer-events: none; }
+    .poi-lbl {
+      position: absolute; left: 0; top: 0; white-space: nowrap;
+      font-size: 10.5px; font-weight: 600; line-height: 1.2;
+      color: #1f2937; background: rgba(255,255,255,.93);
+      padding: 2px 6px; border-radius: 5px;
+      border: 1px solid var(--pc, #ea580c);
+      box-shadow: 0 1px 3px rgba(0,0,0,.18);
+      pointer-events: none;
+    }
+    .poi-legend {
+      display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 4px 0 8px; font-size: 11.5px;
+    }
+    .poi-leg-item { display: inline-flex; align-items: center; gap: 5px; }
+    .poi-leg-icon {
+      width: 18px; height: 18px; border-radius: 50%; flex: 0 0 18px;
+      background: var(--pc, #ea580c); color: #fff;
+      border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.18);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .poi-leg-icon svg { width: 10px; height: 10px; display: block; }
     @media (max-width: 640px) {
       .panel {
         top: auto; left: 10px; right: 10px; width: auto;
@@ -249,7 +301,7 @@
       .panel.collapsed h1::after { content: "  · 图例 / 图层"; font-weight: 400; font-size: 12px; color: var(--muted); }
       .collapse-btn { top: 4px; right: 4px; width: 44px; height: 44px; font-size: 20px; }
       .toolbar button { padding: 10px 8px; font-size: 14px; }
-      .toggles { gap: 2px; font-size: 15px; }
+      .toggles { grid-template-columns: 1fr 1fr; gap: 2px 8px; font-size: 14px; }
       .toggles label { min-height: 40px; }
       .toggles input { width: 20px; height: 20px; }
       .legend { grid-template-columns: 1fr 1fr; gap: 6px 10px; }
@@ -266,6 +318,9 @@
       .prop-dir summary { padding: 10px; font-size: 13.5px; }
       .prop-chip { padding: 6px 9px; font-size: 12.5px; }
       .prop-lbl { font-size: 13px; padding: 4px 9px; }
+      .poi-lbl { font-size: 11px; padding: 2px 6px; }
+      .popup-intro { font-size: 13px; }
+      .popup-near { font-size: 12.5px; }
       .prop-cluster { width: 40px; height: 40px; font-size: 15px; }
       .prop-cluster.lg { width: 46px; height: 46px; font-size: 17px; }
       .prop-cluster.xl { width: 52px; height: 52px; font-size: 18px; }
@@ -287,14 +342,19 @@
         <button type="button" id="btnAll">含外围县</button>
       </div>
       <div class="toggles">
-        <label><input type="checkbox" id="togProperties" checked /> 我的房源（52 个楼盘）</label>
+        <label><input type="checkbox" id="togProperties" checked /> 我的房源（52）</label>
+        <label><input type="checkbox" id="togPoiMall" checked /> 大型商超</label>
+        <label><input type="checkbox" id="togPoiSchool" checked /> 国际学校</label>
+        <label><input type="checkbox" id="togPoiHospital" /> 医院</label>
         <label><input type="checkbox" id="togDistricts" checked /> 旧城区各郡</label>
-        <label><input type="checkbox" id="togWards" /> 第 2 郡坊界（phường）</label>
+        <label><input type="checkbox" id="togWards" /> 第 2 郡坊界</label>
         <label><input type="checkbox" id="togRural" /> 外围五县（浅色）</label>
         <label><input type="checkbox" id="togAirport" checked /> 新山一机场</label>
       </div>
       <div class="legend-title">我的房源 · 按区域色标</div>
       <div class="prop-legend" id="propLegend"></div>
+      <div class="legend-title">周边配套图例</div>
+      <div class="poi-legend" id="poiLegend"></div>
       <details class="prop-dir" id="propDir">
         <summary><span>房源楼盘速查（点击飞往定位）</span><span>▾</span></summary>
         <div class="prop-dir-body" id="propDirBody"></div>
@@ -385,6 +445,11 @@
     L.control.layers(baseMaps, null, { position: "topright", collapsed: true }).addTo(map);
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
 
+    map.createPane("poiPins");
+    map.getPane("poiPins").style.zIndex = 590;
+    map.createPane("poiLabels");
+    map.getPane("poiLabels").style.zIndex = 595;
+    map.getPane("poiLabels").style.pointerEvents = "none";
     map.createPane("propPins");
     map.getPane("propPins").style.zIndex = 620;
     map.createPane("propLabels");
@@ -729,7 +794,10 @@
       const c = panel.classList.contains("collapsed");
       document.getElementById("collapseBtn").textContent = IS_MOBILE ? (c ? "▴" : "▾") : (c ? "▸" : "▾");
       if (!c) panel.scrollTop = 0;
-      setTimeout(refreshLabelVisibility, 30);
+      setTimeout(() => {
+        refreshLabelVisibility();
+        refreshMapOverlays();
+      }, 30);
     }
     document.getElementById("collapseBtn").addEventListener("click", togglePanel);
     if (IS_MOBILE) {
@@ -780,6 +848,144 @@
       return walk(layer.getLatLngs());
     }
 
+    // ---------- Nearby POIs (Malls / International Schools / Hospitals) ----------
+    // Data stored cleanly for easy editing; verified coordinates only.
+    const POI_TYPES = [
+      {
+        id: "mall", zh: "大型商超", typeLabel: "大型购物中心 / 超市", color: "#EA580C",
+        togId: "togPoiMall",
+        svg: `<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.2 5.5h9.6l-.8 8H4l-.8-8z"/><path d="M5.6 5.5V4.2a2.4 2.4 0 0 1 4.8 0v1.3"/></svg>`,
+      },
+      {
+        id: "school", zh: "国际学校", typeLabel: "国际学校", color: "#1E3A8A",
+        togId: "togPoiSchool",
+        svg: `<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 6.3L8 3.2l6.5 3.1L8 9.4 1.5 6.3z"/><path d="M4.2 7.8v3.3c0 1 1.7 1.8 3.8 1.8s3.8-.8 3.8-1.8V7.8"/><path d="M14.2 6.6v3.7"/></svg>`,
+      },
+      {
+        id: "hospital", zh: "医院", typeLabel: "综合 / 专科医院", color: "#BE123C",
+        togId: "togPoiHospital",
+        svg: `<svg viewBox="0 0 16 16" fill="#fff" aria-hidden="true"><rect x="6.5" y="2.5" width="3" height="11" rx=".8"/><rect x="2.5" y="6.5" width="11" height="3" rx=".8"/></svg>`,
+      },
+    ];
+    const POI_TYPE_MAP = Object.fromEntries(POI_TYPES.map(t => [t.id, t]));
+
+    const POIS = [
+      // 大型商超 Malls & Supermarkets
+      { cat: "mall", name: "Vincom Đồng Khởi", sub: "Vincom Center Đồng Khởi", addr: "72 Lê Thánh Tôn, Bến Nghé, Quận 1", note: "一郡核心商圈购物中心", lat: 10.778157, lng: 106.701893, osm: "way/1217481835" },
+      { cat: "mall", name: "Saigon Centre · 高岛屋", sub: "Saigon Centre / Takashimaya", addr: "65-67 Lê Lợi, Bến Nghé, Quận 1", note: "含高岛屋百货（Takashimaya）", lat: 10.773240, lng: 106.700878, osm: "way/802125677" },
+      { cat: "mall", name: "Vincom Landmark 81", sub: "Vincom Center Landmark 81", addr: "772 Điện Biên Phủ, Phường 22, Bình Thạnh", note: "Landmark 81 裙楼大型商场与超市", lat: 10.794833, lng: 106.721722, osm: "way/622296615" },
+      { cat: "mall", name: "Pearl Plaza", sub: "Pearl Plaza Mall", addr: "561A Điện Biên Phủ, Phường 25, Bình Thạnh", note: "含超市、餐饮与办公裙楼", lat: 10.800103, lng: 106.718602, osm: "way/1101519713" },
+      { cat: "mall", name: "Thiso Mall Sala", sub: "Thiso Mall Sala & Emart", addr: "10 Mai Chí Thọ, Thủ Thiêm, Quận 2", note: "守添核心综合商场，含 Emart 大型超市", lat: 10.772055, lng: 106.721949, osm: "way/605774020" },
+      { cat: "mall", name: "Vincom Thảo Điền", sub: "Vincom Mega Mall Thảo Điền", addr: "161 Võ Nguyên Giáp, Thảo Điền, Quận 2", note: "紧邻地铁 1 号线草田站", lat: 10.802367, lng: 106.740878, osm: "way/430290607" },
+      { cat: "mall", name: "Estella Place", sub: "Estella Place Mall", addr: "88 Song Hành, An Phú, Quận 2", note: "Estella Heights 裙楼商场，餐饮与超市齐备", lat: 10.801760, lng: 106.748568, osm: "way/723041514" },
+      { cat: "mall", name: "MM Mega Market 安富", sub: "MM Mega Market An Phú", addr: "An Phú – An Khánh, Quận 2", note: "仓储式大型综合超市", lat: 10.800048, lng: 106.743165, osm: "way/112287488" },
+      { cat: "mall", name: "Gigamall", sub: "Gigamall Phạm Văn Đồng", addr: "240-242 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức", note: "大型家庭购物中心（含 Co.opXtra）", lat: 10.8276722, lng: 106.7215390, osm: "node/9586916912" },
+      { cat: "mall", name: "Crescent Mall", sub: "Crescent Mall · AEON Nguyễn Văn Linh", addr: "101 Tôn Dật Tiên, Tân Phú, Quận 7", note: "富美兴半月湖畔购物中心，内有 AEON 百货及超市", lat: 10.728987, lng: 106.718688, osm: "way/188114097" },
+      { cat: "mall", name: "SC VivoCity", sub: "SC VivoCity · Co.opXtra", addr: "1058 Nguyễn Văn Linh, Tân Phong, Quận 7", note: "大型商场，内设 Co.opXtra 大型超市", lat: 10.729931, lng: 106.703387, osm: "way/362000989" },
+      { cat: "mall", name: "Lotte Mart 第7郡", sub: "LOTTE Mart Quận 7", addr: "469 Nguyễn Hữu Thọ, Tân Hưng, Quận 7", note: "韩国乐天玛特大型超市及购物广场", lat: 10.741078, lng: 106.702092, osm: "way/57727327" },
+      { cat: "mall", name: "GO! 阮氏十", sub: "GO! Nguyễn Thị Thập (原 Big C)", addr: "99 Nguyễn Thị Thập, Tân Phú, Quận 7", note: "大型平价商超（原 Big C）", lat: 10.737202, lng: 106.725491, osm: "way/1308072064" },
+
+      { cat: "mall", name: "Co.opmart Cống Quỳnh", sub: "Co.opmart Cống Quỳnh", addr: "189C Cống Quỳnh, Quận 1", lat: 10.767248, lng: 106.686201, osm: "way/152994798" },
+
+      // 国际学校 International Schools
+      { cat: "school", name: "BIS 英国国际学校", sub: "British International School HCMC", addr: "246 Nguyễn Văn Hưởng, Thảo Điền, Quận 2", note: "英制国际学校中学部", lat: 10.810235, lng: 106.730623, osm: "node/9587300725" },
+      { cat: "school", name: "ISHCMC 中学部", sub: "International School HCMC (Secondary)", addr: "1 Xuân Thủy, Thảo Điền, Quận 2", note: "IB 国际学校中学部", lat: 10.803428, lng: 106.727840, osm: "way/505424025" },
+      { cat: "school", name: "ISHCMC 小学部", sub: "International School HCMC (Primary)", addr: "28 Võ Trường Toản, An Phú, Quận 2", note: "ISHCMC 安富小学部园区", lat: 10.805780, lng: 106.746871, osm: "node/5019301721" },
+      { cat: "school", name: "EIS 欧洲国际学校", sub: "European International School HCMC", addr: "730 F-G-K Lê Văn Miến, Thảo Điền, Quận 2", note: "草田的 IB 国际学校", lat: 10.805524, lng: 106.734621, osm: "node/9587618751" },
+      { cat: "school", name: "AIS 澳大利亚国际学校", sub: "Australian International School", addr: "264 Mai Chí Thọ, An Phú, Quận 2", note: "澳大利亚国际学校守添校区", lat: 10.789380, lng: 106.750077, osm: "way/256791305" },
+      { cat: "school", name: "TAS 美国国际学校", sub: "The American School", addr: "6 Song Hành, An Phú / Bình Trưng Đông, Quận 2", note: "美制 AP 课程国际学校", lat: 10.794322, lng: 106.762694, osm: "way/1098140522" },
+      { cat: "school", name: "Vinschool 中央公园", sub: "Vinschool Central Park", addr: "Vinhomes Central Park, Bình Thạnh", note: "Vinhomes 配套 K-12 国际双语学校", lat: 10.793034, lng: 106.720879, osm: "way/608504317" },
+      { cat: "school", name: "Vinschool 金河", sub: "Vinschool Golden River", addr: "2 Tôn Đức Thắng, Bến Nghé, Quận 1", note: "一郡 Ba Son 社区内学校", lat: 10.786131, lng: 106.711601, osm: "way/781574399" },
+      { cat: "school", name: "SSIS 南西贡国际学校", sub: "Saigon South International School", addr: "78 Nguyễn Đức Cảnh, Tân Phong, Quận 7", note: "美式国际学校，开设 AP 和 IB 课程", lat: 10.723028, lng: 106.708771, osm: "way/289875437" },
+      { cat: "school", name: "CIS 加拿大国际学校", sub: "Canadian International School", addr: "7 Đường số 23, Tân Phú, Quận 7", note: "安省/IB 体系国际学校", lat: 10.713975, lng: 106.729178, osm: "way/1305111387" },
+      { cat: "school", name: "RISS 文艺复兴", sub: "Renaissance International School Saigon", addr: "74 Nguyễn Thị Thập, Bình Thuận, Quận 7", note: "英制 IB/IGCSE 国际学校", lat: 10.738487, lng: 106.724678, osm: "way/218852761" },
+      { cat: "school", name: "台北学校", sub: "Taipei School in HCMC · 越南胡志明市台北学校", addr: "Lô S3 Mỹ Gia, Tân Phú, Quận 7", note: "中文繁体/台湾课纲 K-12 学校", lat: 10.723832, lng: 106.731344, osm: "way/149904670" },
+      { cat: "school", name: "韩国国际学校", sub: "Korean International School HCMC", addr: "21 Tân Phú, Quận 7", note: "富美兴韩侨 K-12 学校", lat: 10.722008, lng: 106.732477, osm: "way/149904632" },
+      { cat: "school", name: "日本人学校", sub: "Japanese School in HCMC", addr: "Đường số 16, Tân Phú, Quận 7", note: "毗邻 Midtown 樱花公园", lat: 10.725760, lng: 106.730108, osm: "way/149904671" },
+      { cat: "school", name: "EMASI 南龙", sub: "EMASI Nam Long", addr: "147 Trần Trọng Cung, Tân Thuận Đông, Quận 7", note: "双语 K-12 国际课程学校", lat: 10.745018, lng: 106.734596, osm: "way/1308395633" },
+
+      { cat: "school", name: "ISSP 西贡珍珠国际学校", sub: "International School Saigon Pearl", addr: "92 Nguyễn Hữu Cảnh, Bình Thạnh", lat: 10.790143, lng: 106.719658, osm: "way/193288953" },
+
+      // 国际医院 Major Hospitals
+      { cat: "hospital", name: "FV 法越医院", sub: "FV Hospital", addr: "6 Nguyễn Lương Bằng, Tân Phú, Quận 7", note: "JCI 认证国际综合医院（多语种就诊）", lat: 10.732364, lng: 106.717939, osm: "way/158708608" },
+      { cat: "hospital", name: "心德心脏医院", sub: "Bệnh viện Tim Tâm Đức", addr: "4 Nguyễn Lương Bằng, Tân Phú, Quận 7", note: "紧邻 FV 医院的心脏专科医院", lat: 10.733490, lng: 106.717798, osm: "way/158971987" },
+      { cat: "hospital", name: "Vinmec 国际医院", sub: "Vinmec Central Park International Hospital", addr: "208 Nguyễn Hữu Cảnh, Phường 22, Bình Thạnh", note: "JCI 认证综合国际医院", lat: 10.794179, lng: 106.720377, osm: "way/576987251" },
+      { cat: "hospital", name: "AIH 美国国际医院", sub: "American International Hospital (AIH)", addr: "199 Nguyễn Hoàng, An Phú, Quận 2", note: "美式标准综合国际医院", lat: 10.793770, lng: 106.746805, osm: "way/1241980323" },
+    ];
+
+    const poiLayer = L.layerGroup([], { attribution: '配套坐标 © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' });
+    const poiLabelLayer = L.layerGroup();
+    const POI_ITEMS = [];
+
+    // Populate POI legend in panel
+    const poiLegendEl = document.getElementById("poiLegend");
+    for (const pt of POI_TYPES) {
+      const leg = document.createElement("div");
+      leg.className = "poi-leg-item";
+      leg.innerHTML = `<span class="poi-leg-icon" style="--pc:${pt.color}">${pt.svg}</span><span>${pt.zh} (${POIS.filter(x => x.cat === pt.id).length})</span>`;
+      poiLegendEl.appendChild(leg);
+    }
+
+    function fitMarkerPopup(e, maxWidth) {
+      if (IS_MOBILE && !panel.classList.contains("collapsed")) togglePanel();
+      const popup = e.popup;
+      const fit = () => {
+        if (!popup.isOpen()) return;
+        const mapBounds = map.getContainer().getBoundingClientRect();
+        const panelBounds = document.getElementById("panel").getBoundingClientRect();
+        const left = IS_MOBILE ? mapBounds.left + 10 : panelBounds.right + 10;
+        const right = mapBounds.right - 10;
+        const top = mapBounds.top + (IS_MOBILE ? 150 : 45);
+        const bottom = IS_MOBILE ? panelBounds.top - 12 : mapBounds.bottom - 20;
+        popup.options.maxWidth = Math.min(maxWidth, Math.max(140, right - left - 46));
+        popup.options.maxHeight = Math.max(100, bottom - top - 66);
+        popup.update();
+
+        // Measure the rendered wrapper after Leaflet has positioned the popup.
+        const bounds = popup.getElement().querySelector(".leaflet-popup-content-wrapper").getBoundingClientRect();
+        const dx = bounds.left < left ? bounds.left - left : Math.max(0, bounds.right - right);
+        const dy = bounds.top < top ? bounds.top - top : Math.max(0, bounds.bottom - bottom);
+        if (Math.abs(dx) >= 1 || Math.abs(dy) >= 1) map.panBy([dx, dy], { animate: false });
+      };
+      requestAnimationFrame(fit);
+    }
+
+    for (const poi of POIS) {
+      const pt = POI_TYPE_MAP[poi.cat];
+      const icon = L.divIcon({
+        className: "poi-marker",
+        html: `<div class="poi-badge" style="--pc:${pt.color}" title="${poi.name}">${pt.svg}</div>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        popupAnchor: [0, -12],
+      });
+      const marker = L.marker([poi.lat, poi.lng], { icon, pane: "poiPins", zIndexOffset: 200 });
+      const noteRow = poi.note ? `<tr><td>说明</td><td>${poi.note}</td></tr>` : "";
+      marker.bindPopup(`<div class="popup">
+        <span class="popup-badge" style="background:${pt.color}">${pt.zh}</span>
+        <h3>${poi.name}</h3>
+        <div class="vi">${poi.sub}</div>
+        <table>
+          <tr><td>类型</td><td>${pt.typeLabel}</td></tr>
+          <tr><td>地址</td><td>${poi.addr}</td></tr>
+          ${noteRow}
+        </table>
+        <a class="popup-source" href="https://www.openstreetmap.org/${poi.osm}" target="_blank" rel="noopener noreferrer">坐标来源</a>
+      </div>`, { maxWidth: 270, autoPan: false });
+
+      marker.on("popupopen", e => fitMarkerPopup(e, 270));
+      const lblMarker = L.marker([poi.lat, poi.lng], {
+        icon: L.divIcon({
+          className: "poi-lbl-wrap",
+          html: `<div class="poi-lbl" style="--pc:${pt.color}">${poi.name}</div>`,
+          iconSize: [0, 0],
+        }),
+        interactive: false, keyboard: false, pane: "poiLabels",
+      });
+      const wPx = Math.ceil(textW(poi.name, 600) * (IS_MOBILE ? 11 : 10.5)) + 16;
+      POI_ITEMS.push({ poi, pt, marker, lblMarker, wPx, hPx: 20 });
+    }
+
     // ---------- Agent Apartment Listings ----------
     const PROP_GROUPS = [
       { id: "d1", zh: "一郡", vi: "Quận 1", color: "#D97706" },
@@ -790,68 +996,186 @@
     ];
     const GROUP_MAP = Object.fromEntries(PROP_GROUPS.map(g => [g.id, g]));
 
+    // Verified completion years & 2026 building ages (easy to edit here)
+    // 年份采用竣工或实际交付时间。分期项目注明适用楼栋。
+    const BUILDING_INFO = {
+      "golden-river": { years: [2018, 2019], phase: "分期", dev: "Vinhomes", intro: "社区内有 Vinschool 和滨河绿地，往市中心可到 Vincom Đồng Khởi。", source: "https://thuviennhadat.vn/hoi-dap/hop-dong-mua-ban-can-ho-vinhomes-golden-river-co-neu-ro-cac-thong-tin-ve-hien-trang-cua-can-ho-730472.html" },
+      "the-marq": { years: [2021, 2022], phase: "分期", dev: "香港置地 & Hoa Lâm", intro: "邻近黎文八公园，南侧商圈有 Vincom Đồng Khởi。", source: "https://themarqvietnam.com/" },
+      "grand-marina": { years: [2023, 2025], phase: "Lake、Sea 栋", status: "新盘", dev: "Masterise Homes", intro: "靠近 Ba Son 滨河步道和 Vinschool，沿河可到同起街商圈。", source: "https://masterisehomes.com/en/truyen-thong/project-news/the-first-marriott-residences-branded-apartment-complex-in-vietnam-officially-opens-at-grand-marina-saigon" },
+      "the-opera": { years: [2024], phase: "首批", dev: "SonKim Land / Quốc Lộc Phát", intro: "靠近守添滨河步道，可到 Thiso Mall Sala 的 Emart 采购。", source: "https://sonkimland.vn/vi/media/news/sunset-melody-dac-quyen-thuong-thuc-da-tiec-am-nhac-trong-khung-canh-hoang-hon-da-sac-bao-tron-thanh-pho-cua-dan-the-opera-residence" },
+      "the-galleria": { years: [2021], phase: "首批", dev: "SonKim Land / Quốc Lộc Phát", intro: "靠近 Ba Son 桥和守添滨河步道，南侧有 Thiso Mall Sala。", source: "https://batdongsan.com.vn/du-an-can-ho-chung-cu-quan-2/the-galleria-residence-pj6096" },
+      "the-crest": { years: [2023], dev: "SonKim Land / Quốc Lộc Phát", intro: "靠近守添滨江一带，日常采购可去 Thiso Mall Sala。", source: "https://vnexpress.net/bat-dong-san/du-an/detail/the-crest-residence-208" },
+      "empire-city": { years: [2020, 2022], approximate: true, phase: "已交付组团", status: "部分在建", dev: "Keppel Land / Tiến Phước / Gaw", intro: "临西贡河，沿 Mai Chí Thọ 往东可到 Thiso Mall Sala。", source: "https://vn.savills.com.vn/residential/ho-chi-minh-city-projects/cove-residences---empire-city.aspx" },
+      "the-river-thu-thiem": { years: [2022], dev: "Refico & CII", intro: "位于守添滨河地段，附近有河岸步道，可到 Thiso Mall Sala 购物。", source: "https://www.ricons.vn/blog/tin-tuc/ricons-chinh-thuc-ban-giao-sieu-pham-the-river-thu-thiem/" },
+      "zeit-river": { years: [2024, 2025], phase: "T1–T2 栋", status: "新盘", dev: "韩国 GS E&C", intro: "靠近守添滨河一带，附近商超有 Thiso Mall Sala 和 Emart。", source: "https://www.thuthiemproperty.com/gs-thu-thiem-zeit-river" },
+      "new-city": { years: [2018], phase: "首批", dev: "Thuận Việt", intro: "沿 Mai Chí Thọ 大道分布有日常商铺，往西可到 Thiso Mall Sala。", source: "https://congan.com.vn/Sites/CATP/Storage/Issues/2023/10/19/baocatp-5292-ha.pdf" },
+      "the-sun-avenue": { years: [2018], dev: "Novaland", intro: "沿街有餐饮和便利店，附近有澳大利亚国际学校和 AIH 医院。", source: "https://www.novaland.com.vn/tin-tuc-1/thong-tin-novaland/tin-du-an/tin-vui-cho-cu-dan-the-sun-avenue-cua-novaland-2894-san-pham-bds-dang-thuc-hien-thu-tuc-cap-so-hong" },
+      "diamond-island": { years: [2018], phase: "全盘竣工", dev: "Kusto Home", intro: "岛上有滨河绿地，周边有澳大利亚国际学校及 AIH 医院。", source: "https://kustohome.com.vn/news/kusto-home-celebrated-successful-completion-of-diamond-island-project-in-vietnam" },
+      "feliz-en-vista": { years: [2020], dev: "凯德 CapitaLand", intro: "邻近盛美利滨河绿地和本地商铺，往北可到 AIH 医院。", source: "https://felizenvista.com.vn/cap-nhat-moi-nhat-tinh-trang-cap-giay-chung-nhan-quyen-so-huu-so-hong-tai-feliz-en-vista/" },
+      "one-verandah": { years: [2020], dev: "丰树 Mapletree", intro: "邻近盛美利滨河绿地，周边有澳大利亚国际学校和 AIH 医院。", source: "https://www.mapletree.com.sg/services/view_file.aspx?f=%7B212400DC-D85A-4A21-B57C-3C5123B834B7%7D" },
+      "vista-verde": { years: [2017], dev: "凯德 CapitaLand", intro: "靠近盛美利社区商铺和滨河绿地，往北可到 AIH 医院。", source: "https://investor.capitaland.com/newsroom/20191105_070643_C31_GDOVJM12R2G5FJSU.4.pdf" },
+      "victoria-village": { years: [2026], phase: "高层首批", status: "新盘", dev: "Novaland", intro: "位于盛美利，附近有社区商铺，往安富方向可到 AIH 医院。", source: "https://www.ricons.vn/blog/tin-tuc/victoria-village-tien-gan-den-cot-moc-ve-dich-thang-9-2026/" },
+      "lumiere-riverside": { years: [2023], dev: "Masterise Homes", intro: "邻近 Estella Place 和 ISHCMC 小学部。", source: "https://www.youtube.com/watch?v=wshxTIEJ1oE" },
+      "masteri-thao-dien": { years: [2016], phase: "首批", dev: "Thảo Điền Investment（现 Masterise Homes）", intro: "社区旁是 Vincom Mega Mall，草田内有 BIS 和欧洲国际学校。", source: "https://masterisehomes.com/storage/media/AsBU8V1jn0hwj95u6qJp3ZJEeB5Om0anXrwnxQkR.pdf" },
+      "masteri-an-phu": { years: [2019], dev: "Masterise Homes", intro: "邻近 Estella Place、MM Mega Market 和 ISHCMC 小学部。", source: "https://canhotuonglai.com/du-an/masteri-an-phu" },
+      "the-estella": { years: [2012], dev: "Keppel Land & Tiến Phước", intro: "靠近 Estella Place 和 MM Mega Market，往北是 ISHCMC 小学部。", source: "https://www.keppel.com/realestate/About-Us/Our-Projects/Vietnam/" },
+      "estella-heights": { years: [2017, 2018], phase: "分期", dev: "Keppel Land & Tiến Phước", intro: "楼下是 Estella Place，近 MM Mega Market 和 ISHCMC 小学部。", source: "https://www.keppel.com/realestate/About-Us/Our-Projects/Vietnam/" },
+      "saigon-royal": { years: [2018], phase: "首批", dev: "Novaland", intro: "靠近孟桥，过桥可到第一郡的 Saigon Centre 和高岛屋。", source: "https://static1.vietstock.vn/edocs/Files/2020/09/04/diem-nhan-den-tu-du-an-aqua-city-va-thoai-von-tai-cong-ty-con_20200904162937.pdf" },
+      "the-tresor": { years: [2017], dev: "Novaland", intro: "位于 Bến Vân Đồn 河岸，过桥可到 Saigon Centre 和高岛屋。", source: "https://static1.vietstock.vn/edocs/Files/2020/09/04/diem-nhan-den-tu-du-an-aqua-city-va-thoai-von-tai-cong-ty-con_20200904162937.pdf" },
+      "icon-56": { years: [2015], dev: "Novaland", intro: "沿河有本地餐饮，过桥可到 Saigon Centre 和高岛屋。", source: "https://www.novaland.com.vn/Data/Sites/1/media/quan-h%E1%BB%87-%C4%91%E1%BA%A7u-t%C6%B0/Th%C3%B4ng-tin-t%E1%BA%ADp-%C4%91o%C3%A0n/B%E1%BA%A3n-c%C3%A1o-b%E1%BA%A1ch-NVL-d.pdf" },
+      "rivergate": { years: [2017], phase: "首批", dev: "Novaland", intro: "邻近 Ông Lãnh 桥，过河可到九二三公园和滨城市场。", source: "https://www.novaland.com.vn/Data/Sites/1/media/quan-h%E1%BB%87-%C4%91%E1%BA%A7u-t%C6%B0/AGM/2018/20180409_nvl_ar2017_vn---web.pdf" },
+      "millennium": { years: [2018], dev: "Thảo Điền Investment / Phát Đạt / Vĩnh Hội", intro: "沿 Bến Vân Đồn 有餐饮和便利店，过桥可到滨城市场。", source: "https://www.phatdat.com.vn/en/news/handover-and-takeover-ceremony-of-the-millennium-luxury-residential-area" },
+      "the-goldview": { years: [2017], dev: "TNR Holdings", intro: "社区设有商业裙楼，周边有本地餐饮，近 Bến Nghé 水道。", source: "https://www.miwa.vn/vi/project/61/the-gold-view" },
+      "galaxy-9": { years: [2015], dev: "Novaland", intro: "Nguyễn Khoái 一带有便利店和餐饮，东侧有庆会公园。", source: "https://www.novaland.com.vn/Data/Sites/1/media/ban-tin-hang-thang/4-2016.pdf" },
+      "de-la-sol": { years: [2023], dev: "凯德 CapitaLand", intro: "邻近第四郡社区商铺，沿 Tôn Thất Thuyết 可到庆会公园。", source: "https://www.capitaland.com/en/about-capitaland/newsroom/news-releases/vietnam/20221/capitaland-development-presents-keys-to-homeowners-of-de-la-sols.html" },
+      "landmark-81": { years: [2018], dev: "Vinhomes", intro: "楼下是 Vincom 商场，周边有滨江中央公园、Vinschool 和 Vinmec。", source: "https://storage.googleapis.com/vinhomes-data-02/20180809_HSPL_QDPD_LM81_TB%20Nghiem%20thu%20hoan%20thanh%20cong%20trinh%20G%C4%90%201_1653295554.pdf" },
+      "city-garden": { years: [2012, 2018], phase: "分期", dev: "Refico", intro: "社区内有园林，向东可到 Saigon Pearl 国际学校和 Vinmec 医院。", source: "https://wtpartnership.asia/our-team-experience/city-garden-vietnam/" },
+      "sunrise-city": { years: [2012, 2015], approximate: true, phase: "分期", dev: "Novaland", intro: "马路对面是 Lotte Mart，沿 Nguyễn Hữu Thọ 有银行和餐饮。", source: "https://www.novaland.com.vn/sunrise-city-du-an-gan-lien-voi-chu-tin" },
+      "eco-green": { years: [2020, 2021], approximate: true, phase: "HR1、HR2 栋", dev: "Xuân Mai Corp", intro: "周边有 Eco Green 社区绿地，往南可到 Crescent Mall。", source: "https://xmc.com.vn/storage/bao-cao-thuong-nien/bao-cao-thuong-nien-2021-xmc-final-42022.pdf" },
+      "lavida-plus": { dev: "Quốc Cường Gia Lai", intro: "靠近 Nguyễn Văn Linh 与 Nguyễn Hữu Thọ 交叉口，往东可到 SC VivoCity。" },
+      "sunshine-sky-city": { years: [2021], phase: "S1 栋", status: "部分在建", dev: "Sunshine Group", intro: "位于 Cả Cấm 河一带，周边有富美兴商圈及 FV 医院。", source: "https://sunshinegroup.vn/sunshine-sky-city-hien-thuc-hoa-chuan-song-quoc-te-gan-ke-trung-tam-tai-chinh-thuong-mai-phu-my-hung" },
+      "sky-garden": { years: [2004, 2009], approximate: true, phase: "分期", dev: "富美兴 Phú Mỹ Hưng", intro: "邻近 SC VivoCity 和 Co.opXtra，周边有多家韩日餐厅。", source: "https://phumyhung.vn/moi-khach-hang-den-chon-san-pham-du-an-sky-garden-3-giai-doan-2/" },
+      "celesta-rise": { years: [2024], phase: "首批", dev: "Keppel Land & Phú Long", intro: "在芽皮 Nguyễn Hữu Thọ 沿线，往北可到 SC VivoCity 和南西贡国际学校。", source: "https://www.keppel.com/realestate/vn/News-Library/11-2024-Celesta-Rise-handover-marks-new-standard-in-Saigon-South-urban-living" },
+      "sunrise-riverside": { years: [2018, 2024], phase: "分期", dev: "Novaland", intro: "位于 Rạch Đỉa 桥以南，过桥可到 SC VivoCity 和 Co.opXtra。", source: "https://www.novaland.com.vn/Data/Sites/1/media/quan-h%E1%BB%87-%C4%91%E1%BA%A7u-t%C6%B0/BCTN/2022/1804/viet-novaland-ar2021-hq.pdf" },
+      "saigon-south": { years: [2019], dev: "富美兴 Phú Mỹ Hưng", intro: "靠近第七郡边界，往北可到 SC VivoCity，附近有 ABC 国际学校。", source: "https://phumyhung.vn/phu-my-hung-ban-giao-962-can-ho-saigon-south-residences-cho-khach-hang/" },
+      "skyline": { years: [2017], dev: "An Gia & Creed Group", intro: "位于 Hoàng Quốc Việt 滨河段，往西可到南苑的国际学校和社区公园。", source: "https://angia.com.vn/du-an" },
+      "sky-89": { years: [2021], dev: "An Gia & Creed Group", intro: "靠近西贡河，周边有沿街商铺，往西可到加拿大国际学校。", source: "https://angia.com.vn/du-an" },
+      "river-panorama": { years: [2020], dev: "An Gia & Creed Group", intro: "靠近西贡河，往西可到南苑学校区，向南可到 Co.opmart Huỳnh Tấn Phát。", source: "https://angia.com.vn/du-an" },
+      "riviera-point": { years: [2014, 2019], phase: "1A、1B 期", dev: "Keppel Land & Tấn Trường", intro: "沿 Cả Cấm 河分布，过桥可到富美兴商圈和 FV 医院。", source: "https://www.keppel.com/file/investor-relations/events-presentations/presentations/2019/briefing-to-analysts-on-vietnam-property-26-sep-2019.pdf" },
+      "riverside-residence": { years: [2010, 2011], phase: "分期", dev: "富美兴 Phú Mỹ Hưng", intro: "靠近富美兴南苑滨河绿地、加拿大国际学校及韩国国际学校。", source: "https://batdongsan.com.vn/du-an-can-ho-chung-cu-quan-7/riverside-residence-pj991" },
+      "scenic-valley": { years: [2017, 2018], phase: "分期", dev: "富美兴 Phú Mỹ Hưng", intro: "邻近半月湖、Crescent Mall 和 FV 法越医院。", source: "https://phumyhung.vn/chao-don-cong-dong-cu-dan-moi-scenic-valley-2/" },
+      "midtown": { years: [2019, 2021], phase: "分期", dev: "富美兴 & 日本三大房企联营", intro: "社区内有樱花公园，邻近日本人学校、台北学校和韩国国际学校。", source: "https://www.youtube.com/watch?v=8-BHScXrs74" },
+      "hung-phuc": { years: [2018, 2020], approximate: true, phase: "含 Premier", dev: "富美兴 Phú Mỹ Hưng", intro: "面对南苑绿地，靠近加拿大国际学校和韩国国际学校。", source: "https://phumyhung.vn/hung-phuc-premier/tin-tuc" },
+      "nam-phuc": { years: [2018], dev: "富美兴 Phú Mỹ Hưng", intro: "邻近南苑公园，周围有台北学校、日本人学校和韩国国际学校。", source: "https://phumyhungsale.vn/nam-phuc-le-jardin/" },
+      "the-antonia": { years: [2023], dev: "富美兴 Phú Mỹ Hưng", intro: "位于南苑学校区，靠近南苑公园和台北学校。", source: "https://phumyhungsale.vn/du-an/the-antonia/" },
+      "the-aurora": { years: [2025], status: "新盘", dev: "富美兴 Phú Mỹ Hưng", intro: "紧邻南苑公园，周边有加拿大国际学校和韩国国际学校。", source: "https://phumyhungngaynay.com/en/photos/phu-my-hung-hands-over-the-aurora-apartments-on-schedule/" },
+      "the-ascentia": { years: [2022], dev: "富美兴 Phú Mỹ Hưng", intro: "位于 Nguyễn Lương Bằng 大道，邻近南苑公园和国际学校。", source: "https://phumyhung.vn/khach-hang-the-ascentia-nhan-nha-nhan-them-uu-dai/" },
+      "cardinal-court": { years: [2023], phase: "首批", dev: "富美兴 Phú Mỹ Hưng", intro: "位于富美兴商贸区，附近有半月湖、Crescent Mall 和 FV 医院。", source: "https://phumyhung.vn/su-kien/ban-giao-can-ho-cardinal-court/" },
+    };
+
     const PROPERTIES = [
       // 一郡
-      { g: "d1", name: "Golden River", sub: "Vinhomes Golden River (Ba Son)", addr: "2 Tôn Đức Thắng, Bến Nghé, Quận 1", lat: 10.786242, lng: 106.710666 },
-      { g: "d1", name: "The Marq", sub: "The Marq Luxury Residences", addr: "29B Nguyễn Đình Chiểu, Đa Kao, Quận 1", lat: 10.787208, lng: 106.699106 },
-      { g: "d1", name: "Grand Marina", sub: "Grand Marina, Saigon (Ba Son)", addr: "2 Tôn Đức Thắng, Bến Nghé, Quận 1", lat: 10.783940, lng: 106.708522 },
+      { id: "golden-river", g: "d1", name: "Golden River", sub: "Vinhomes Golden River (Ba Son)", addr: "2 Tôn Đức Thắng, Bến Nghé, Quận 1",
+        lat: 10.786242, lng: 106.710666 },
+      { id: "the-marq", g: "d1", name: "The Marq", sub: "The Marq Luxury Residences", addr: "29B Nguyễn Đình Chiểu, Đa Kao, Quận 1",
+        lat: 10.787208, lng: 106.699106 },
+      { id: "grand-marina", g: "d1", name: "Grand Marina", sub: "Grand Marina, Saigon (Ba Son)", addr: "2 Tôn Đức Thắng, Bến Nghé, Quận 1",
+        lat: 10.783940, lng: 106.708522 },
 
       // 二郡
-      { g: "d2", name: "The Opera", sub: "The Opera Residence · Metropole Thủ Thiêm", addr: "Đường D6, Thủ Thiêm, Quận 2", lat: 10.777540, lng: 106.712700 },
-      { g: "d2", name: "The Galleria", sub: "The Galleria Residence · Metropole Thủ Thiêm", addr: "20 Nguyễn Thiện Thành, Thủ Thiêm, Quận 2", lat: 10.778950, lng: 106.713190 },
-      { g: "d2", name: "The Crest", sub: "The Crest Residence · Metropole Thủ Thiêm", addr: "Đường N11, Thủ Thiêm, Quận 2", lat: 10.779100, lng: 106.714570 },
-      { g: "d2", name: "Empire City", sub: "Empire City Thủ Thiêm (Linden / Cove / Narra)", addr: "2B Mai Chí Thọ, Thủ Thiêm, Quận 2", lat: 10.768750, lng: 106.713230 },
-      { g: "d2", name: "The River Thủ Thiêm", sub: "The River Thủ Thiêm", addr: "23 Trần Bạch Đằng, Thủ Thiêm, Quận 2", lat: 10.782530, lng: 106.719100 },
-      { g: "d2", name: "Zeit River", sub: "Thủ Thiêm Zeit River (Lô 3-11)", addr: "Nguyễn Cơ Thạch & Trần Bạch Đằng, Thủ Thiêm, Quận 2", lat: 10.781100, lng: 106.720000 },
-      { g: "d2", name: "New City", sub: "New City Thủ Thiêm", addr: "17 Mai Chí Thọ, An Khánh, Quận 2", lat: 10.781304, lng: 106.735645 },
-      { g: "d2", name: "The Sun Avenue", sub: "The Sun Avenue (Novaland)", addr: "28 Mai Chí Thọ, An Phú, Quận 2", lat: 10.784174, lng: 106.746177 },
-      { g: "d2", name: "Diamond Island", sub: "Đảo Kim Cương · 钻石岛", addr: "Số 1 Đường 104, Bình Trưng Tây, Quận 2", lat: 10.777015, lng: 106.746843 },
-      { g: "d2", name: "Feliz en Vista", sub: "Feliz en Vista (CapitaLand)", addr: "01 Phan Văn Đáng, Thạnh Mỹ Lợi, Quận 2", lat: 10.777816, lng: 106.755710 },
-      { g: "d2", name: "One Verandah", sub: "One Verandah (Mapletree)", addr: "Bát Nàn / Tạ Hiện, Thạnh Mỹ Lợi, Quận 2", lat: 10.776493, lng: 106.750850 },
-      { g: "d2", name: "Vista Verde", sub: "Vista Verde (CapitaLand)", addr: "02 Phan Văn Đáng, Thạnh Mỹ Lợi, Quận 2", lat: 10.776708, lng: 106.756627 },
-      { g: "d2", name: "Victoria Village", sub: "Victoria Village (Novaland)", addr: "266 Trương Văn Bang, Thạnh Mỹ Lợi, Quận 2", lat: 10.771220, lng: 106.760840 },
-      { g: "d2", name: "Lumière Riverside", sub: "Lumière Riverside (Masterise Homes)", addr: "259 Võ Nguyên Giáp, An Phú, Quận 2", lat: 10.803650, lng: 106.748600 },
-      { g: "d2", name: "Masteri Thảo Điền", sub: "Masteri Thảo Điền", addr: "159 Võ Nguyên Giáp, Thảo Điền, Quận 2", lat: 10.802649, lng: 106.742399 },
-      { g: "d2", name: "Masteri An Phú", sub: "Masteri An Phú", addr: "191 Võ Nguyên Giáp, An Phú, Quận 2", lat: 10.803665, lng: 106.747227 },
-      { g: "d2", name: "The Estella", sub: "The Estella An Phú", addr: "Đường số 25, An Phú, Quận 2", lat: 10.800693, lng: 106.748564 },
-      { g: "d2", name: "Estella Heights", sub: "Estella Heights (Keppel Land)", addr: "88 Song Hành, An Phú, Quận 2", lat: 10.801543, lng: 106.748654 },
+      { id: "the-opera", g: "d2", name: "The Opera", sub: "The Opera Residence · Metropole Thủ Thiêm", addr: "Đường D6, Thủ Thiêm, Quận 2",
+        lat: 10.777540, lng: 106.712700 },
+      { id: "the-galleria", g: "d2", name: "The Galleria", sub: "The Galleria Residence · Metropole Thủ Thiêm", addr: "20 Nguyễn Thiện Thành, Thủ Thiêm, Quận 2",
+        lat: 10.778950, lng: 106.713190 },
+      { id: "the-crest", g: "d2", name: "The Crest", sub: "The Crest Residence · Metropole Thủ Thiêm", addr: "Đường N11, Thủ Thiêm, Quận 2",
+        lat: 10.779100, lng: 106.714570 },
+      { id: "empire-city", g: "d2", name: "Empire City", sub: "Empire City Thủ Thiêm (Linden / Cove / Narra)", addr: "2B Mai Chí Thọ, Thủ Thiêm, Quận 2",
+        lat: 10.768750, lng: 106.713230 },
+      { id: "the-river-thu-thiem", g: "d2", name: "The River Thủ Thiêm", sub: "The River Thủ Thiêm", addr: "23 Trần Bạch Đằng, Thủ Thiêm, Quận 2",
+        lat: 10.782530, lng: 106.719100 },
+      { id: "zeit-river", g: "d2", name: "Zeit River", sub: "Thủ Thiêm Zeit River (Lô 3-11)", addr: "Nguyễn Cơ Thạch & Trần Bạch Đằng, Thủ Thiêm, Quận 2",
+        lat: 10.781100, lng: 106.720000 },
+      { id: "new-city", g: "d2", name: "New City", sub: "New City Thủ Thiêm", addr: "17 Mai Chí Thọ, An Khánh, Quận 2",
+        lat: 10.781304, lng: 106.735645 },
+      { id: "the-sun-avenue", g: "d2", name: "The Sun Avenue", sub: "The Sun Avenue (Novaland)", addr: "28 Mai Chí Thọ, An Phú, Quận 2",
+        lat: 10.784174, lng: 106.746177 },
+      { id: "diamond-island", g: "d2", name: "Diamond Island", sub: "Đảo Kim Cương · 钻石岛", addr: "Số 1 Đường 104, Bình Trưng Tây, Quận 2",
+        lat: 10.777015, lng: 106.746843 },
+      { id: "feliz-en-vista", g: "d2", name: "Feliz en Vista", sub: "Feliz en Vista (CapitaLand)", addr: "01 Phan Văn Đáng, Thạnh Mỹ Lợi, Quận 2",
+        lat: 10.777816, lng: 106.755710 },
+      { id: "one-verandah", g: "d2", name: "One Verandah", sub: "One Verandah (Mapletree)", addr: "Bát Nàn / Tạ Hiện, Thạnh Mỹ Lợi, Quận 2",
+        lat: 10.776493, lng: 106.750850 },
+      { id: "vista-verde", g: "d2", name: "Vista Verde", sub: "Vista Verde (CapitaLand)", addr: "02 Phan Văn Đáng, Thạnh Mỹ Lợi, Quận 2",
+        lat: 10.776708, lng: 106.756627 },
+      { id: "victoria-village", g: "d2", name: "Victoria Village", sub: "Victoria Village (Novaland)", addr: "266 Trương Văn Bang, Thạnh Mỹ Lợi, Quận 2",
+        lat: 10.771220, lng: 106.760840 },
+      { id: "lumiere-riverside", g: "d2", name: "Lumière Riverside", sub: "Lumière Riverside (Masterise Homes)", addr: "259 Võ Nguyên Giáp, An Phú, Quận 2",
+        lat: 10.803650, lng: 106.748600 },
+      { id: "masteri-thao-dien", g: "d2", name: "Masteri Thảo Điền", sub: "Masteri Thảo Điền", addr: "159 Võ Nguyên Giáp, Thảo Điền, Quận 2",
+        lat: 10.802649, lng: 106.742399 },
+      { id: "masteri-an-phu", g: "d2", name: "Masteri An Phú", sub: "Masteri An Phú", addr: "191 Võ Nguyên Giáp, An Phú, Quận 2",
+        lat: 10.803665, lng: 106.747227 },
+      { id: "the-estella", g: "d2", name: "The Estella", sub: "The Estella An Phú", addr: "Đường số 25, An Phú, Quận 2",
+        lat: 10.800693, lng: 106.748564 },
+      { id: "estella-heights", g: "d2", name: "Estella Heights", sub: "Estella Heights (Keppel Land)", addr: "88 Song Hành, An Phú, Quận 2",
+        lat: 10.801543, lng: 106.748654 },
 
       // 四郡
-      { g: "d4", name: "Saigon Royal", sub: "Saigon Royal Residence", addr: "34-35 Bến Vân Đồn, Phường 12, Quận 4", lat: 10.766721, lng: 106.703845 },
-      { g: "d4", name: "The Tresor", sub: "The Tresor Residence", addr: "39 Bến Vân Đồn, Phường 12, Quận 4", lat: 10.766332, lng: 106.703628 },
-      { g: "d4", name: "Icon 56", sub: "Icon 56 Apartment", addr: "56 Bến Vân Đồn, Phường 12, Quận 4", lat: 10.765810, lng: 106.703124 },
-      { g: "d4", name: "RiverGate", sub: "RiverGate Residence", addr: "151-155 Bến Vân Đồn, Phường 6, Quận 4", lat: 10.762786, lng: 106.698649 },
-      { g: "d4", name: "Millennium", sub: "Masteri Millennium", addr: "132 Bến Vân Đồn, Phường 6, Quận 4", lat: 10.763170, lng: 106.699640 },
-      { g: "d4", name: "The GoldView", sub: "The GoldView", addr: "346 Bến Vân Đồn, Phường 1, Quận 4", lat: 10.756260, lng: 106.691810 },
-      { g: "d4", name: "Galaxy 9", sub: "Galaxy 9 Apartment", addr: "9 Nguyễn Khoái, Phường 1, Quận 4", lat: 10.755577, lng: 106.693998 },
-      { g: "d4", name: "De La Sol", sub: "De La Sol (CapitaLand)", addr: "1 Tôn Thất Thuyết, Phường 1, Quận 4", lat: 10.753611, lng: 106.692825 },
+      { id: "saigon-royal", g: "d4", name: "Saigon Royal", sub: "Saigon Royal Residence", addr: "34-35 Bến Vân Đồn, Phường 12, Quận 4",
+        lat: 10.766721, lng: 106.703845 },
+      { id: "the-tresor", g: "d4", name: "The Tresor", sub: "The Tresor Residence", addr: "39 Bến Vân Đồn, Phường 12, Quận 4",
+        lat: 10.766332, lng: 106.703628 },
+      { id: "icon-56", g: "d4", name: "Icon 56", sub: "Icon 56 Apartment", addr: "56 Bến Vân Đồn, Phường 12, Quận 4",
+        lat: 10.765810, lng: 106.703124 },
+      { id: "rivergate", g: "d4", name: "RiverGate", sub: "RiverGate Residence", addr: "151-155 Bến Vân Đồn, Phường 6, Quận 4",
+        lat: 10.762786, lng: 106.698649 },
+      { id: "millennium", g: "d4", name: "Millennium", sub: "Masteri Millennium", addr: "132 Bến Vân Đồn, Phường 6, Quận 4",
+        lat: 10.763400, lng: 106.699600 },
+      { id: "the-goldview", g: "d4", name: "The GoldView", sub: "The GoldView", addr: "346 Bến Vân Đồn, Phường 1, Quận 4",
+        lat: 10.756260, lng: 106.691810 },
+      { id: "galaxy-9", g: "d4", name: "Galaxy 9", sub: "Galaxy 9 Apartment", addr: "9 Nguyễn Khoái, Phường 1, Quận 4",
+        lat: 10.755577, lng: 106.693998 },
+      { id: "de-la-sol", g: "d4", name: "De La Sol", sub: "De La Sol (CapitaLand)", addr: "1 Tôn Thất Thuyết, Phường 1, Quận 4",
+        lat: 10.753611, lng: 106.692825 },
 
       // 平盛郡
-      { g: "bt", name: "Landmark 81", sub: "Vinhomes Central Park · Landmark", addr: "720A Điện Biên Phủ, Phường 22, Bình Thạnh", lat: 10.795085, lng: 106.721914 },
-      { g: "bt", name: "City Garden", sub: "City Garden Apartment", addr: "59 Ngô Tất Tố, Phường 21, Bình Thạnh", lat: 10.793508, lng: 106.712861 },
+      { id: "landmark-81", g: "bt", name: "Landmark 81", sub: "Vinhomes Central Park · Landmark", addr: "720A Điện Biên Phủ, Phường 22, Bình Thạnh",
+        lat: 10.795085, lng: 106.721914 },
+      { id: "city-garden", g: "bt", name: "City Garden", sub: "City Garden Apartment", addr: "59 Ngô Tất Tố, Phường 21, Bình Thạnh",
+        lat: 10.793508, lng: 106.712861 },
 
       // 七郡（含紧邻七郡边界的芽皮3个热门楼盘）
-      { g: "d7", name: "Sunrise City", sub: "Sunrise City (South / Central / North)", addr: "23-25-27 Nguyễn Hữu Thọ, Tân Hưng, Quận 7", lat: 10.741474, lng: 106.700536 },
-      { g: "d7", name: "Eco Green", sub: "Eco Green Saigon", addr: "107 Nguyễn Văn Linh, Tân Thuận Tây, Quận 7", lat: 10.749214, lng: 106.723934 },
-      { g: "d7", name: "Lavida Plus", sub: "Lavida Plus", addr: "Nguyễn Văn Linh & Nguyễn Hữu Thọ, Tân Phong, Quận 7", lat: 10.727115, lng: 106.701655 },
-      { g: "d7", name: "Sunshine Sky City", sub: "Sunshine Sky City", addr: "23 Đường Tân Thuận / Phú Thuận, Quận 7", lat: 10.729664, lng: 106.730485 },
-      { g: "d7", name: "Sky Garden", sub: "Phú Mỹ Hưng · Sky Garden 1–3", addr: "Nguyễn Văn Linh, Tân Phong, Quận 7", lat: 10.729175, lng: 106.704839 },
-      { g: "d7", name: "Celesta Rise", sub: "Celesta Rise (Keppel & Phú Long)", addr: "Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）", note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），位于第7郡南侧延伸段", lat: 10.708532, lng: 106.709166 },
-      { g: "d7", name: "Sunrise Riverside", sub: "Sunrise Riverside (Novaland)", addr: "Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）", note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），隔桥即第7郡", lat: 10.722784, lng: 106.703405 },
-      { g: "d7", name: "Saigon South", sub: "Saigon South Residences (Phú Mỹ Hưng)", addr: "113A Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）", note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），紧邻第7郡富美兴", lat: 10.720704, lng: 106.703640 },
-      { g: "d7", name: "Skyline", sub: "An Gia Skyline", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7", lat: 10.715658, lng: 106.740853 },
-      { g: "d7", name: "Sky 89", sub: "An Gia Sky 89", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7", lat: 10.714486, lng: 106.742494 },
-      { g: "d7", name: "River Panorama", sub: "An Gia River Panorama", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7", lat: 10.714916, lng: 106.741637 },
-      { g: "d7", name: "Riviera Point", sub: "Riviera Point · 含 The View / The Infinity", addr: "2 Nguyễn Văn Tưởng, Tân Phú, Quận 7", lat: 10.732210, lng: 106.729060 },
-      { g: "d7", name: "Riverside Residence", sub: "Phú Mỹ Hưng · Riverside Residence", addr: "Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.719523, lng: 106.726452 },
-      { g: "d7", name: "Scenic Valley", sub: "Phú Mỹ Hưng · Scenic Valley 1 & 2", addr: "Tôn Dật Tiên, Tân Phú, Quận 7", lat: 10.731125, lng: 106.716668 },
-      { g: "d7", name: "Midtown", sub: "Phú Mỹ Hưng Midtown (The Grande–The Peak)", addr: "Đường số 16 (Sakura Park), Tân Phú, Quận 7", lat: 10.724840, lng: 106.729850 },
-      { g: "d7", name: "Hưng Phúc", sub: "Hưng Phúc · Happy Residence (& Premier)", addr: "Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.717717, lng: 106.728147 },
-      { g: "d7", name: "Nam Phúc", sub: "Nam Phúc · Le Jardin (Phú Mỹ Hưng)", addr: "Đường C, Nam Viên, Tân Phú, Quận 7", lat: 10.720699, lng: 106.729434 },
-      { g: "d7", name: "The Antonia", sub: "Phú Mỹ Hưng · The Antonia", addr: "Lô S6-1 Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.719689, lng: 106.727834 },
-      { g: "d7", name: "The Aurora", sub: "Phú Mỹ Hưng · The Aurora", addr: "Lô S13-2 Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.717766, lng: 106.729056 },
-      { g: "d7", name: "The Ascentia", sub: "Phú Mỹ Hưng · The Ascentia", addr: "Lô S4-3 Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.720788, lng: 106.727182 },
-      { g: "d7", name: "Cardinal Court", sub: "Phú Mỹ Hưng · Cardinal Court", addr: "Lô C13B Phú Mỹ Hưng, Tân Phú, Quận 7", lat: 10.728128, lng: 106.724424 },
+      { id: "sunrise-city", g: "d7", name: "Sunrise City", sub: "Sunrise City (South / Central / North)", addr: "23-25-27 Nguyễn Hữu Thọ, Tân Hưng, Quận 7",
+        lat: 10.741474, lng: 106.700536 },
+      { id: "eco-green", g: "d7", name: "Eco Green", sub: "Eco Green Saigon", addr: "107 Nguyễn Văn Linh, Tân Thuận Tây, Quận 7",
+        lat: 10.749214, lng: 106.723934 },
+      { id: "lavida-plus", g: "d7", name: "Lavida Plus", sub: "Lavida Plus", addr: "Nguyễn Văn Linh & Nguyễn Hữu Thọ, Tân Phong, Quận 7",
+        lat: 10.727115, lng: 106.701655 },
+      { id: "sunshine-sky-city", g: "d7", name: "Sunshine Sky City", sub: "Sunshine Sky City", addr: "23 Đường Tân Thuận / Phú Thuận, Quận 7",
+        lat: 10.729664, lng: 106.730485 },
+      { id: "sky-garden", g: "d7", name: "Sky Garden", sub: "Phú Mỹ Hưng · Sky Garden 1–3", addr: "Nguyễn Văn Linh, Tân Phong, Quận 7",
+        lat: 10.729175, lng: 106.704839 },
+      { id: "celesta-rise", g: "d7", name: "Celesta Rise", sub: "Celesta Rise (Keppel & Phú Long)", addr: "Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）",
+        year: "2024 年底", age: "约 2 年（新盘）", dev: "Keppel Land & Phú Long",
+        note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），位于第7郡南侧延伸段",
+        intro: "吉宝与富龙联手打造的全新亲子度假盘，配 50m 泳池、水上乐园与宠物公园。",
+        lat: 10.708532, lng: 106.709166 },
+      { id: "sunrise-riverside", g: "d7", name: "Sunrise Riverside", sub: "Sunrise Riverside (Novaland)", addr: "Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）",
+        year: "2018 年", age: "约 8 年", dev: "Novaland",
+        note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），隔桥即第7郡",
+        intro: "三面环河大型社区，配超大中心泳池与商业底商，过 Rạch Đỉa 桥即抵 SC VivoCity。",
+        lat: 10.722784, lng: 106.703405 },
+      { id: "saigon-south", g: "d7", name: "Saigon South", sub: "Saigon South Residences (Phú Mỹ Hưng)", addr: "113A Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）",
+        year: "2019 年", age: "约 7 年", dev: "富美兴 Phú Mỹ Hưng",
+        note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），紧邻第7郡富美兴",
+        intro: "富美兴打造的高品质高性价比小区，设 69 项户外运动与儿童游乐设施。",
+        lat: 10.720704, lng: 106.703640 },
+      { id: "skyline", g: "d7", name: "Skyline", sub: "An Gia Skyline", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7",
+        lat: 10.715658, lng: 106.740853 },
+      { id: "sky-89", g: "d7", name: "Sky 89", sub: "An Gia Sky 89", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7",
+        lat: 10.714486, lng: 106.742494 },
+      { id: "river-panorama", g: "d7", name: "River Panorama", sub: "An Gia River Panorama", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7",
+        lat: 10.714916, lng: 106.741637 },
+      { id: "riviera-point", g: "d7", name: "Riviera Point", sub: "Riviera Point · 含 The View / The Infiniti", addr: "2 Nguyễn Văn Tưởng, Tân Phú, Quận 7",
+        lat: 10.732210, lng: 106.729060 },
+      { id: "riverside-residence", g: "d7", name: "Riverside Residence", sub: "Phú Mỹ Hưng · Riverside Residence", addr: "Nguyễn Lương Bằng, Tân Phú, Quận 7",
+        lat: 10.719523, lng: 106.726452 },
+      { id: "scenic-valley", g: "d7", name: "Scenic Valley", sub: "Phú Mỹ Hưng · Scenic Valley 1 & 2", addr: "Tôn Dật Tiên, Tân Phú, Quận 7",
+        lat: 10.731125, lng: 106.716668 },
+      { id: "midtown", g: "d7", name: "Midtown", sub: "Phú Mỹ Hưng Midtown (The Grande–The Peak)", addr: "Đường số 16 (Sakura Park), Tân Phú, Quận 7",
+        lat: 10.724840, lng: 106.729850 },
+      { id: "hung-phuc", g: "d7", name: "Hưng Phúc", sub: "Hưng Phúc · Happy Residence (& Premier)", addr: "Nguyễn Lương Bằng, Tân Phú, Quận 7",
+        lat: 10.717717, lng: 106.728147 },
+      { id: "nam-phuc", g: "d7", name: "Nam Phúc", sub: "Nam Phúc · Le Jardin (Phú Mỹ Hưng)", addr: "Đường C, Nam Viên, Tân Phú, Quận 7",
+        lat: 10.720699, lng: 106.729434 },
+      { id: "the-antonia", g: "d7", name: "The Antonia", sub: "Phú Mỹ Hưng · The Antonia", addr: "Lô S6-1 Nguyễn Lương Bằng, Tân Phú, Quận 7",
+        lat: 10.719689, lng: 106.727834 },
+      { id: "the-aurora", g: "d7", name: "The Aurora", sub: "Phú Mỹ Hưng · The Aurora", addr: "Lô S13-2 Nguyễn Lương Bằng, Tân Phú, Quận 7",
+        lat: 10.717766, lng: 106.729056 },
+      { id: "the-ascentia", g: "d7", name: "The Ascentia", sub: "Phú Mỹ Hưng · The Ascentia", addr: "Lô S4-3 Nguyễn Lương Bằng, Tân Phú, Quận 7",
+        lat: 10.720788, lng: 106.727182 },
+      { id: "cardinal-court", g: "d7", name: "Cardinal Court", sub: "Phú Mỹ Hưng · Cardinal Court", addr: "Lô C13B Phú Mỹ Hưng, Tân Phú, Quận 7",
+        lat: 10.728128, lng: 106.724424 },
     ];
 
     const PIN_SVG = `<svg class="prop-pin-svg" viewBox="0 0 32 40" width="32" height="40" aria-hidden="true">
@@ -861,6 +1185,7 @@
       </svg>`;
 
     const propLayer = L.layerGroup();
+    const clusterLayer = L.layerGroup().addTo(map);
     const propLabelLayer = L.layerGroup();
     const PROP_ITEMS = [];
     let activeItem = null;
@@ -868,6 +1193,38 @@
 
     function pinHtml(color, name) {
       return `<div class="prop-pin" style="--c:${color}" title="${name}"><span class="prop-halo" aria-hidden="true"></span>${PIN_SVG}</div>`;
+    }
+
+    function fmtDist(m) {
+      if (m < 10) return "10 米以内";
+      if (m < 1000) return `约 ${Math.round(m / 10) * 10} 米`;
+      return `约 ${(m / 1000).toFixed(1)} km`;
+    }
+
+    function nearestPoisHtml(p) {
+      const origin = L.latLng(p.lat, p.lng);
+      const pick = (cat, limit, maxM) => POIS
+        .filter(x => x.cat === cat)
+        .map(x => ({ x, d: origin.distanceTo([x.lat, x.lng]) }))
+        .filter(o => o.d <= maxM)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, limit);
+      const malls = pick("mall", 2, 6000);
+      const schools = pick("school", 2, 6000);
+      const hosps = pick("hospital", 1, 8000);
+      if (!malls.length && !schools.length && !hosps.length) return "";
+      const row = (cat, label, arr) => {
+        if (!arr.length) return "";
+        const c = POI_TYPE_MAP[cat].color;
+        const txt = arr.map(o => `${o.x.name}（${fmtDist(o.d)}）`).join(" · ");
+        return `<div class="popup-near-row"><span class="popup-near-dot" style="background:${c}"></span><span><b>${label}：</b>${txt}</span></div>`;
+      };
+      return `<div class="popup-near">
+        <div class="popup-near-title">周边主要配套（直线距离）</div>
+        ${row("mall", "商超", malls)}
+        ${row("school", "学校", schools)}
+        ${row("hospital", "医院", hosps)}
+      </div>`;
     }
 
     function setActiveItem(item, bounce) {
@@ -899,18 +1256,43 @@
         popupAnchor: [0, -PIN_ANCHOR_Y],
       });
       const marker = L.marker([p.lat, p.lng], { icon, pane: "propPins", zIndexOffset: 500 });
+      const info = BUILDING_INFO[p.id];
+      const years = info.years || [];
+      const yearText = years.join("–");
+      const ageText = years.map(year => 2026 - year).reverse().join("–");
+      const qualifier = info.approximate ? "约 " : "";
+      const phase = info.phase ? `（${info.phase}）` : "";
+      const yearRow = years.length
+        ? `<tr><td>建成年份</td><td>${qualifier}${yearText} 年${phase} · <span title="按 2026 年计算">楼龄 ${qualifier}${ageText} 年</span></td></tr>`
+        : "";
+      const statusRow = info.status ? `<tr><td>状态</td><td>${info.status}</td></tr>` : "";
+      const devRow = info.dev ? `<tr><td>开发商</td><td>${info.dev}</td></tr>` : "";
       const noteRow = p.note ? `<tr><td>区位说明</td><td>${p.note}</td></tr>` : "";
+      const introBox = `<div class="popup-intro" style="--c:${grp.color}">${info.intro}</div>`;
+      const sourceLink = info.source
+        ? `<a class="popup-source" href="${info.source}" target="_blank" rel="noopener noreferrer">年份来源</a>`
+        : "";
+      const nearBox = nearestPoisHtml(p);
       marker.bindPopup(`<div class="popup">
         <span class="popup-badge" style="background:${grp.color}">${grp.zh} · ${grp.vi.split("（")[0]}</span>
         <h3>${p.name}</h3>
         <div class="vi">${p.sub}</div>
+        ${introBox}
         <table>
+          ${yearRow}
+          ${statusRow}
+          ${devRow}
           <tr><td>地址</td><td>${p.addr}</td></tr>
           ${noteRow}
         </table>
-      </div>`, { maxWidth: 270, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, IS_MOBILE ? 110 : 20] });
-      const item = { p, grp, marker, lblMarker: null, wPx: 0, hPx: 24 };
-      marker.on("popupopen", () => setActiveItem(item, true));
+        ${nearBox}
+        ${sourceLink}
+      </div>`, { maxWidth: 300, autoPan: false });
+      const item = { p, grp, marker, lblMarker: null, wPx: 0, hPx: IS_MOBILE ? 27 : 24 };
+      marker.on("popupopen", e => {
+        setActiveItem(item, true);
+        fitMarkerPopup(e, 300);
+      });
       marker.on("popupclose", () => { if (activeItem === item) setActiveItem(null, false); });
       const lblMarker = L.marker([p.lat, p.lng], {
         icon: L.divIcon({
@@ -921,7 +1303,7 @@
         interactive: false, keyboard: false, pane: "propLabels",
       });
       item.lblMarker = lblMarker;
-      item.wPx = Math.ceil(textW(p.name, 700) * 12.5) + 22;
+      item.wPx = Math.ceil(textW(p.name, 700) * (IS_MOBILE ? 13 : 12.5)) + 24;
       PROP_ITEMS.push(item);
     }
     propLayer.addTo(map);
@@ -952,12 +1334,20 @@
         b.addEventListener("click", () => {
           if (!togProperties.checked) { togProperties.checked = true; syncProperties(); }
           if (IS_MOBILE && !panel.classList.contains("collapsed")) togglePanel();
-          const z = Math.max(map.getZoom(), 16);
-          const open = () => { refreshPropDisplay(); item.marker.openPopup(); };
+          const target = item.marker.getLatLng();
+          let z = Math.max(map.getZoom(), 16);
+          while (z < map.getMaxZoom()) {
+            const point = map.project(target, z);
+            const hasNeighbor = PROP_ITEMS.some(other => other !== item &&
+              point.distanceTo(map.project(other.marker.getLatLng(), z)) <= 18);
+            if (!hasNeighbor) break;
+            z = Math.min(z + 0.5, map.getMaxZoom());
+          }
+          const open = () => requestAnimationFrame(() => item.marker.openPopup());
           let done = false;
           const once = () => { if (done) return; done = true; map.off("moveend", once); open(); };
           map.on("moveend", once);
-          map.setView([item.p.lat, item.p.lng], z, { animate: true });
+          map.setView(target, z, { animate: true });
           setTimeout(once, 700);
         });
         chips.appendChild(b);
@@ -1006,100 +1396,196 @@
       }
     }
 
-    function refreshPropLabels(singles, clusterBoxes) {
+    function overlaps(a, b) {
+      return a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
+    }
+
+    function activePoiCats() {
+      const on = new Set();
+      for (const pt of POI_TYPES) {
+        const el = document.getElementById(pt.togId);
+        if (el && el.checked) on.add(pt.id);
+      }
+      return on;
+    }
+
+    function refreshAllLabels(singles, clusterBoxes, visiblePois) {
       propLabelLayer.clearLayers();
+      poiLabelLayer.clearLayers();
       const z = map.getZoom();
-      if (!singles.length || z < 13.5) return;
       let [vx0, vy0, vx1, vy1] = viewRect();
       // Keep name pills off zoom / locate / layers / compass controls
       vx1 -= IS_MOBILE ? 56 : 50;
       vy0 += IS_MOBILE ? 6 : 4;
       if (IS_MOBILE) vx0 += 48;
       const placed = (clusterBoxes || []).slice();
-      const visible = [];
-      for (const item of singles) {
-        const pt = map.latLngToLayerPoint([item.p.lat, item.p.lng]);
-        if (pt.x < vx0 - 50 || pt.x > vx1 + 50 || pt.y < vy0 - 50 || pt.y > vy1 + 20) continue;
-        visible.push({ item, pt });
-        // Reserve the teardrop pin so labels never sit on top of it
-        placed.push([pt.x - 18, pt.y - 42, pt.x + 18, pt.y + 4]);
+
+      // Reserve listing pins before either set of labels.
+      const visProps = [];
+      if (singles && singles.length) {
+        for (const item of singles) {
+          const pt = map.latLngToLayerPoint([item.p.lat, item.p.lng]);
+          if (pt.x < vx0 - 50 || pt.x > vx1 + 50 || pt.y < vy0 - 50 || pt.y > vy1 + 20) continue;
+          visProps.push({ item, pt });
+          placed.push([pt.x - 18, pt.y - 42, pt.x + 18, pt.y + 4]);
+        }
       }
-      const overlaps = (a, b) => !(a[2] <= b[0] || a[0] >= b[2] || a[3] <= b[1] || a[1] >= b[3]);
-      for (const { item, pt } of visible) {
-        const w = item.wPx, h = item.hPx;
-        const candidates = [
-          { lx: 18, ty: -22, tx: "translate(0, -50%)", box: [pt.x + 18, pt.y - 22 - h / 2, pt.x + 18 + w, pt.y - 22 + h / 2] },
-          { lx: -18, ty: -22, tx: "translate(-100%, -50%)", box: [pt.x - 18 - w, pt.y - 22 - h / 2, pt.x - 18, pt.y - 22 + h / 2] },
-          { lx: 0, ty: -42, tx: "translate(-50%, -100%)", box: [pt.x - w / 2, pt.y - 42 - h, pt.x + w / 2, pt.y - 42] },
-          { lx: 0, ty: 8, tx: "translate(-50%, 0)", box: [pt.x - w / 2, pt.y + 8, pt.x + w / 2, pt.y + 8 + h] },
-        ];
-        for (const c of candidates) {
-          const [bx0, by0, bx1, by1] = c.box;
-          if (bx0 < vx0 || bx1 > vx1 || by0 < vy0 || by1 > vy1) continue;
-          if (placed.some(pbox => overlaps(c.box, pbox))) continue;
-          placed.push(c.box);
-          item.lblMarker.addTo(propLabelLayer);
-          const el = item.lblMarker.getElement();
-          if (el) {
-            const inner = el.firstElementChild;
-            if (inner) {
-              inner.style.left = c.lx + "px";
-              inner.style.top = c.ty + "px";
-              inner.style.transform = c.tx;
+      // 1) Listing name pills take top priority (z >= 13.5)
+      if (z >= 13.5) {
+        for (const { item, pt } of visProps) {
+          const w = item.wPx, h = item.hPx;
+          const candidates = [
+            { lx: 18, ty: -22, tx: "translate(0, -50%)", box: [pt.x + 18, pt.y - 22 - h / 2, pt.x + 18 + w, pt.y - 22 + h / 2] },
+            { lx: -18, ty: -22, tx: "translate(-100%, -50%)", box: [pt.x - 18 - w, pt.y - 22 - h / 2, pt.x - 18, pt.y - 22 + h / 2] },
+            { lx: 0, ty: -42, tx: "translate(-50%, -100%)", box: [pt.x - w / 2, pt.y - 42 - h, pt.x + w / 2, pt.y - 42] },
+            { lx: 0, ty: 8, tx: "translate(-50%, 0)", box: [pt.x - w / 2, pt.y + 8, pt.x + w / 2, pt.y + 8 + h] },
+          ];
+          for (const c of candidates) {
+            const [bx0, by0, bx1, by1] = c.box;
+            if (bx0 < vx0 || bx1 > vx1 || by0 < vy0 || by1 > vy1) continue;
+            if (placed.some(pbox => overlaps(c.box, pbox))) continue;
+            placed.push(c.box);
+            item.lblMarker.addTo(propLabelLayer);
+            const el = item.lblMarker.getElement();
+            if (el && el.firstElementChild) {
+              el.firstElementChild.style.left = c.lx + "px";
+              el.firstElementChild.style.top = c.ty + "px";
+              el.firstElementChild.style.transform = c.tx;
             }
+            break;
           }
-          break;
+        }
+      }
+
+      const visPois = [];
+      if (visiblePois && visiblePois.length) {
+        for (const item of visiblePois) {
+          const pt = map.latLngToLayerPoint([item.poi.lat, item.poi.lng]);
+          if (pt.x < vx0 - 40 || pt.x > vx1 + 40 || pt.y < vy0 - 30 || pt.y > vy1 + 30) continue;
+          visPois.push({ item, pt });
+          placed.push([pt.x - 12, pt.y - 12, pt.x + 12, pt.y + 12]);
+        }
+      }
+
+      // 2) Secondary POI name labels at higher zoom (z >= 14.5), yielding to listings
+      if (z >= 14.5) {
+        for (const { item, pt } of visPois) {
+          const w = item.wPx, h = item.hPx;
+          const candidates = [
+            { lx: 14, ty: 0, tx: "translate(0, -50%)", box: [pt.x + 14, pt.y - h / 2, pt.x + 14 + w, pt.y + h / 2] },
+            { lx: -14, ty: 0, tx: "translate(-100%, -50%)", box: [pt.x - 14 - w, pt.y - h / 2, pt.x - 14, pt.y + h / 2] },
+            { lx: 0, ty: -14, tx: "translate(-50%, -100%)", box: [pt.x - w / 2, pt.y - 14 - h, pt.x + w / 2, pt.y - 14] },
+            { lx: 0, ty: 14, tx: "translate(-50%, 0)", box: [pt.x - w / 2, pt.y + 14, pt.x + w / 2, pt.y + 14 + h] },
+          ];
+          for (const c of candidates) {
+            const [bx0, by0, bx1, by1] = c.box;
+            if (bx0 < vx0 || bx1 > vx1 || by0 < vy0 || by1 > vy1) continue;
+            if (placed.some(pbox => overlaps(c.box, pbox))) continue;
+            placed.push(c.box);
+            item.lblMarker.addTo(poiLabelLayer);
+            const el = item.lblMarker.getElement();
+            if (el && el.firstElementChild) {
+              el.firstElementChild.style.left = c.lx + "px";
+              el.firstElementChild.style.top = c.ty + "px";
+              el.firstElementChild.style.transform = c.tx;
+            }
+            break;
+          }
         }
       }
     }
 
-    function refreshPropDisplay() {
-      const show = togProperties.checked;
+    function refreshMapOverlays() {
+      const showProps = togProperties.checked;
       const z = map.getZoom();
-      document.getElementById("map").classList.toggle("prop-hi", show && z >= 14);
-      propLayer.clearLayers();
-      propLabelLayer.clearLayers();
-      if (!show) return;
-      if (!map.hasLayer(propLayer)) propLayer.addTo(map);
-      if (!map.hasLayer(propLabelLayer)) propLabelLayer.addTo(map);
+      const mapEl = document.getElementById("map");
+      mapEl.classList.toggle("prop-hi", showProps && z >= 14);
+      mapEl.classList.toggle("poi-compact", z < 13);
 
-      const baseR = IS_MOBILE ? 56 : 52;
-      const radius = z >= 16 ? 16 : z >= 15 ? Math.round(baseR * 0.62) : z >= 14 ? Math.round(baseR * 0.88) : baseR;
-      const groups = clusterItems(PROP_ITEMS, radius);
+      // Listings (with clustering)
+      clusterLayer.clearLayers();
       const singles = [];
       const clusterBoxes = [];
-      const pad = 4;
-      for (const group of groups) {
-        if (group.length === 1) {
-          const item = group[0].item;
-          item.marker.addTo(propLayer);
-          singles.push(item);
-        } else {
-          const n = group.length;
-          const sizeCls = n >= 10 ? "xl" : (n >= 5 ? "lg" : "");
-          const size = IS_MOBILE
-            ? (n >= 10 ? 52 : (n >= 5 ? 46 : 40))
-            : (n >= 10 ? 48 : (n >= 5 ? 42 : 36));
-          const color = clusterColor(group);
-          const ll = clusterLatLng(group);
-          const cm = L.marker(ll, {
-            icon: L.divIcon({
-              className: "prop-cluster-icon",
-              html: `<div class="prop-cluster ${sizeCls}" style="--c:${color}" title="${n} 个房源">${n}</div>`,
-              iconSize: [size, size],
-              iconAnchor: [size / 2, size / 2],
-            }),
-            pane: "propPins",
-            zIndexOffset: 800,
-          });
-          cm.on("click", e => { L.DomEvent.stopPropagation(e); zoomToCluster(group); });
-          cm.addTo(propLayer);
-          const cpt = map.latLngToLayerPoint(ll);
-          const half = size / 2 + pad;
-          clusterBoxes.push([cpt.x - half, cpt.y - half, cpt.x + half, cpt.y + half]);
+      if (showProps) {
+        if (!map.hasLayer(propLayer)) propLayer.addTo(map);
+        if (!map.hasLayer(propLabelLayer)) propLabelLayer.addTo(map);
+        const baseR = IS_MOBILE ? 56 : 52;
+        const radius = z >= 16 ? 16 : z >= 15 ? Math.round(baseR * 0.62) : z >= 14 ? Math.round(baseR * 0.88) : baseR;
+        const groups = clusterItems(PROP_ITEMS, radius);
+        const pad = 4;
+        for (const group of groups) {
+          if (group.length === 1) {
+            const item = group[0].item;
+            singles.push(item);
+          } else {
+            const n = group.length;
+            const sizeCls = n >= 10 ? "xl" : (n >= 5 ? "lg" : "");
+            const size = IS_MOBILE
+              ? (n >= 10 ? 52 : (n >= 5 ? 46 : 40))
+              : (n >= 10 ? 48 : (n >= 5 ? 42 : 36));
+            const color = clusterColor(group);
+            const ll = clusterLatLng(group);
+            const cm = L.marker(ll, {
+              icon: L.divIcon({
+                className: "prop-cluster-icon",
+                html: `<div class="prop-cluster ${sizeCls}" style="--c:${color}" title="${n} 个房源">${n}</div>`,
+                iconSize: [size, size],
+                iconAnchor: [size / 2, size / 2],
+              }),
+              pane: "propPins",
+              zIndexOffset: 800,
+            });
+            cm.on("click", e => { L.DomEvent.stopPropagation(e); zoomToCluster(group); });
+            cm.addTo(clusterLayer);
+            const cpt = map.latLngToLayerPoint(ll);
+            const half = size / 2 + pad;
+            clusterBoxes.push([cpt.x - half, cpt.y - half, cpt.x + half, cpt.y + half]);
+          }
         }
       }
-      refreshPropLabels(singles, clusterBoxes);
+
+      const singleSet = new Set(singles);
+      for (const item of PROP_ITEMS) {
+        if (singleSet.has(item)) propLayer.addLayer(item.marker);
+        else propLayer.removeLayer(item.marker);
+      }
+
+      const onCats = activePoiCats();
+      const visiblePois = [];
+      for (const item of POI_ITEMS) {
+        if (onCats.has(item.poi.cat)) {
+          poiLayer.addLayer(item.marker);
+          visiblePois.push(item);
+        } else {
+          poiLayer.removeLayer(item.marker);
+        }
+      }
+      if (onCats.size) {
+        poiLayer.addTo(map);
+        poiLabelLayer.addTo(map);
+      } else {
+        poiLayer.remove();
+        poiLabelLayer.remove();
+      }
+
+      if (z < 13) {
+        const occupied = clusterBoxes.slice();
+        for (const item of singles) {
+          const pt = map.latLngToLayerPoint(item.marker.getLatLng());
+          occupied.push([pt.x - 16, pt.y - 37, pt.x + 16, pt.y + 3]);
+        }
+        for (const item of visiblePois) {
+          const pt = map.latLngToLayerPoint(item.marker.getLatLng());
+          const box = [pt.x - 9, pt.y - 9, pt.x + 9, pt.y + 9];
+          const hide = !item.marker.isPopupOpen() && occupied.some(other => overlaps(box, other));
+          item.marker.getElement().classList.toggle("poi-overlap", hide);
+          if (!hide) occupied.push(box);
+        }
+      } else {
+        for (const item of visiblePois) item.marker.getElement().classList.remove("poi-overlap");
+      }
+
+      refreshAllLabels(singles, clusterBoxes, visiblePois);
       if (activeItem && propLayer.hasLayer(activeItem.marker)) setActiveItem(activeItem, false);
     }
 
@@ -1113,15 +1599,19 @@
         if (map.hasLayer(propLabelLayer)) map.removeLayer(propLabelLayer);
         if (activeItem) { activeItem.marker.closePopup(); setActiveItem(null, false); }
       }
-      refreshPropDisplay();
+      refreshMapOverlays();
     }
     togProperties.addEventListener("change", syncProperties);
+    for (const pt of POI_TYPES) {
+      const el = document.getElementById(pt.togId);
+      if (el) el.addEventListener("change", refreshMapOverlays);
+    }
 
-    map.on("moveend", refreshPropDisplay);
-    window.addEventListener("resize", refreshPropDisplay);
-    map.whenReady(refreshPropDisplay);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshPropDisplay);
-    setTimeout(refreshPropDisplay, 320);
+    map.on("moveend", refreshMapOverlays);
+    window.addEventListener("resize", refreshMapOverlays);
+    map.whenReady(refreshMapOverlays);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshMapOverlays);
+    setTimeout(refreshMapOverlays, 320);
   </script>
 </body>
 </html>
