@@ -142,37 +142,79 @@
       user-select: none; cursor: default;
     }
     .compass-ctl svg { width: 34px; height: 34px; display: block; }
-    /* Property markers & labels */
-    .prop-marker { background: none; border: 0; }
-    .prop-hit {
-      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-      transform: translate(-14px, -14px); cursor: pointer;
+    /* Soften base tiles so colourful listing pins pop; overlays (district fills, labels) stay vivid */
+    #map.tiles-muted .leaflet-tile-pane { filter: saturate(.68) contrast(.95) brightness(1.04); }
+    #map.tiles-muted-sat .leaflet-tile-pane { filter: saturate(.86) brightness(.96); }
+    /* Property markers, clusters & labels */
+    .prop-marker, .prop-cluster-icon, .prop-lbl-wrap { background: none; border: 0; overflow: visible; }
+    .prop-pin {
+      position: relative; width: 32px; height: 40px; cursor: pointer;
+      --c: #0b6e99;
     }
-    .prop-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      border: 2px solid #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,.48);
-      transition: transform .15s ease, width .15s ease, height .15s ease;
+    .prop-halo {
+      position: absolute; left: 50%; bottom: 1px; width: 16px; height: 16px;
+      margin-left: -8px; border-radius: 50%; background: var(--c);
+      opacity: 0; pointer-events: none; z-index: 0;
     }
-    .prop-hit:hover .prop-dot { transform: scale(1.3); }
-    .prop-zoom-in .prop-dot { width: 12px; height: 12px; }
-    .prop-lbl-wrap { background: none; border: 0; overflow: visible; pointer-events: none; }
+    #map.prop-hi .prop-halo { animation: prop-pulse 2.6s ease-out infinite; }
+    @keyframes prop-pulse {
+      0% { transform: scale(.65); opacity: .42; }
+      100% { transform: scale(2.35); opacity: 0; }
+    }
+    .prop-pin-svg {
+      position: relative; z-index: 1; display: block; width: 32px; height: 40px;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,.5));
+      transform-origin: 50% 100%;
+      transition: transform .15s ease;
+    }
+    .prop-marker:hover .prop-pin-svg { transform: scale(1.12); }
+    .prop-marker.is-active .prop-pin-svg {
+      transform: scale(1.24);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,.55));
+    }
+    .prop-marker.is-bounce .prop-pin-svg { animation: prop-bounce .65s ease; }
+    @keyframes prop-bounce {
+      0% { transform: scale(1.24) translateY(0); }
+      28% { transform: scale(1.24) translateY(-11px); }
+      55% { transform: scale(1.24) translateY(0); }
+      75% { transform: scale(1.24) translateY(-5px); }
+      100% { transform: scale(1.24) translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #map.prop-hi .prop-halo { animation: none; opacity: .28; transform: scale(1.15); }
+      .prop-marker.is-bounce .prop-pin-svg { animation: none; }
+    }
+    .prop-cluster {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--c, #334155); color: #fff;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.42), 0 0 0 1px rgba(0,0,0,.12);
+      font-weight: 800; font-size: 14px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; user-select: none;
+    }
+    .prop-cluster.lg { width: 42px; height: 42px; font-size: 16px; }
+    .prop-cluster.xl { width: 48px; height: 48px; font-size: 17px; }
+    .prop-cluster:hover { transform: scale(1.08); }
+    .prop-lbl-wrap { pointer-events: none; }
     .prop-lbl {
       position: absolute; left: 0; top: 0;
-      white-space: nowrap; font-size: 11px; font-weight: 600; line-height: 1.2;
-      color: #182026; background: rgba(255,255,255,.93);
-      padding: 2px 6px; border-radius: 5px;
-      border-left: 3px solid var(--c, #0b6e99);
-      box-shadow: 0 1px 4px rgba(0,0,0,.24);
-      pointer-events: none;
+      white-space: nowrap; font-size: 12.5px; font-weight: 700; letter-spacing: .01em;
+      line-height: 1.2; color: #fff; background: var(--c, #0b6e99);
+      padding: 3px 8px; border-radius: 6px;
+      border: 1.5px solid rgba(255,255,255,.95);
+      box-shadow: 0 2px 6px rgba(0,0,0,.38), 0 0 0 1px rgba(0,0,0,.1);
+      pointer-events: none; text-shadow: 0 1px 1px rgba(0,0,0,.25);
     }
     .prop-legend {
       display: flex; flex-wrap: wrap; gap: 5px 10px; margin: 4px 0 8px; font-size: 11.5px;
     }
     .prop-leg-item { display: inline-flex; align-items: center; gap: 5px; }
     .prop-leg-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.22); flex: 0 0 10px;
+      width: 10px; height: 13px; flex: 0 0 10px;
+      background: var(--c, #888);
+      border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+      border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.2);
     }
     .prop-dir { margin: 6px 0 8px; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.72); }
     .prop-dir summary {
@@ -221,10 +263,12 @@
       .leaflet-control-layers-toggle { width: 44px !important; height: 44px !important; }
       .compass-ctl { width: 44px; height: 44px; }
       .compass-ctl svg { width: 34px; height: 34px; }
-      .prop-dot { width: 11px; height: 11px; }
-      .prop-zoom-in .prop-dot { width: 13px; height: 13px; }
       .prop-dir summary { padding: 10px; font-size: 13.5px; }
       .prop-chip { padding: 6px 9px; font-size: 12.5px; }
+      .prop-lbl { font-size: 13px; padding: 4px 9px; }
+      .prop-cluster { width: 40px; height: 40px; font-size: 15px; }
+      .prop-cluster.lg { width: 46px; height: 46px; font-size: 17px; }
+      .prop-cluster.xl { width: 52px; height: 52px; font-size: 18px; }
       .leaflet-popup-content { font-size: 14px; }
       .popup h3 { font-size: 18px; }
       .popup table { font-size: 14px; }
@@ -367,6 +411,15 @@
       }
     });
     new CompassCtl().addTo(map);
+
+    function syncTileTone() {
+      const el = map.getContainer();
+      const sat = map.hasLayer(baseSat) || map.hasLayer(baseHybrid);
+      el.classList.toggle("tiles-muted", !sat);
+      el.classList.toggle("tiles-muted-sat", sat);
+    }
+    syncTileTone();
+    map.on("baselayerchange", syncTileTone);
 
     function popupHtml(p) {
       const kind = p.kind === "ward" ? "坊（phường）" : (p.kind === "rural_district" ? "县（huyện）" : "郡（quận）");
@@ -801,16 +854,49 @@
       { g: "d7", name: "Cardinal Court", sub: "Phú Mỹ Hưng · Cardinal Court", addr: "Lô C13B Phú Mỹ Hưng, Tân Phú, Quận 7", lat: 10.728128, lng: 106.724424 },
     ];
 
+    const PIN_SVG = `<svg class="prop-pin-svg" viewBox="0 0 32 40" width="32" height="40" aria-hidden="true">
+        <path fill="var(--c)" stroke="#fff" stroke-width="2" stroke-linejoin="round"
+          d="M16 2.2c-6.4 0-11.6 5.1-11.6 11.6 0 8.6 11.6 23.4 11.6 23.4S27.6 22.4 27.6 13.8C27.6 7.3 22.4 2.2 16 2.2z"/>
+        <path fill="#fff" d="M16 9.3l6.2 5.1v7.4h-3.7v-4.2h-5v4.2H9.8v-7.4z"/>
+      </svg>`;
+
     const propLayer = L.layerGroup();
     const propLabelLayer = L.layerGroup();
     const PROP_ITEMS = [];
+    let activeItem = null;
+    const PIN_W = 32, PIN_H = 40, PIN_ANCHOR_Y = 36;
+
+    function pinHtml(color, name) {
+      return `<div class="prop-pin" style="--c:${color}" title="${name}"><span class="prop-halo" aria-hidden="true"></span>${PIN_SVG}</div>`;
+    }
+
+    function setActiveItem(item, bounce) {
+      if (activeItem && activeItem !== item) {
+        const prev = activeItem.marker.getElement();
+        if (prev) prev.classList.remove("is-active", "is-bounce");
+        activeItem.marker.setZIndexOffset(500);
+      }
+      activeItem = item || null;
+      if (!item) return;
+      item.marker.setZIndexOffset(2000);
+      const el = item.marker.getElement();
+      if (!el) return;
+      el.classList.add("is-active");
+      if (bounce && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        el.classList.remove("is-bounce");
+        void el.offsetWidth;
+        el.classList.add("is-bounce");
+      }
+    }
 
     for (const p of PROPERTIES) {
       const grp = GROUP_MAP[p.g];
       const icon = L.divIcon({
         className: "prop-marker",
-        html: `<div class="prop-hit" title="${p.name}"><div class="prop-dot" style="background:${grp.color}"></div></div>`,
-        iconSize: [0, 0],
+        html: pinHtml(grp.color, p.name),
+        iconSize: [PIN_W, PIN_H],
+        iconAnchor: [PIN_W / 2, PIN_ANCHOR_Y],
+        popupAnchor: [0, -PIN_ANCHOR_Y],
       });
       const marker = L.marker([p.lat, p.lng], { icon, pane: "propPins", zIndexOffset: 500 });
       const noteRow = p.note ? `<tr><td>区位说明</td><td>${p.note}</td></tr>` : "";
@@ -823,8 +909,9 @@
           ${noteRow}
         </table>
       </div>`, { maxWidth: 270, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, IS_MOBILE ? 110 : 20] });
-      marker.addTo(propLayer);
-
+      const item = { p, grp, marker, lblMarker: null, wPx: 0, hPx: 24 };
+      marker.on("popupopen", () => setActiveItem(item, true));
+      marker.on("popupclose", () => { if (activeItem === item) setActiveItem(null, false); });
       const lblMarker = L.marker([p.lat, p.lng], {
         icon: L.divIcon({
           className: "prop-lbl-wrap",
@@ -833,8 +920,9 @@
         }),
         interactive: false, keyboard: false, pane: "propLabels",
       });
-      const wPx = Math.ceil(textW(p.name, 600) * 11) + 18;
-      PROP_ITEMS.push({ p, grp, marker, lblMarker, wPx, hPx: 20 });
+      item.lblMarker = lblMarker;
+      item.wPx = Math.ceil(textW(p.name, 700) * 12.5) + 22;
+      PROP_ITEMS.push(item);
     }
     propLayer.addTo(map);
     propLabelLayer.addTo(map);
@@ -846,12 +934,12 @@
       const list = PROP_ITEMS.filter(x => x.p.g === g.id);
       const leg = document.createElement("div");
       leg.className = "prop-leg-item";
-      leg.innerHTML = `<span class="prop-leg-dot" style="background:${g.color}"></span><span>${g.zh} (${list.length})</span>`;
+      leg.innerHTML = `<span class="prop-leg-dot" style="--c:${g.color}"></span><span>${g.zh} (${list.length})</span>`;
       propLegendEl.appendChild(leg);
 
       const gt = document.createElement("div");
       gt.className = "prop-grp-title";
-      gt.innerHTML = `<span class="prop-leg-dot" style="background:${g.color}"></span><span>${g.zh} · ${g.vi}</span>`;
+      gt.innerHTML = `<span class="prop-leg-dot" style="--c:${g.color}"></span><span>${g.zh} · ${g.vi}</span>`;
       propDirBody.appendChild(gt);
 
       const chips = document.createElement("div");
@@ -864,43 +952,87 @@
         b.addEventListener("click", () => {
           if (!togProperties.checked) { togProperties.checked = true; syncProperties(); }
           if (IS_MOBILE && !panel.classList.contains("collapsed")) togglePanel();
-          map.setView([item.p.lat, item.p.lng], Math.max(map.getZoom(), 16), { animate: true });
-          setTimeout(() => item.marker.openPopup(), 260);
+          const z = Math.max(map.getZoom(), 16);
+          const open = () => { refreshPropDisplay(); item.marker.openPopup(); };
+          let done = false;
+          const once = () => { if (done) return; done = true; map.off("moveend", once); open(); };
+          map.on("moveend", once);
+          map.setView([item.p.lat, item.p.lng], z, { animate: true });
+          setTimeout(once, 700);
         });
         chips.appendChild(b);
       }
       propDirBody.appendChild(chips);
     }
 
-    // Smart collision-free property name labels at z >= 13.5
-    function refreshPropLabels() {
-      const showProps = map.hasLayer(propLayer);
-      const z = map.getZoom();
-      document.getElementById("map").classList.toggle("prop-zoom-in", z >= 14.5);
-      propLabelLayer.clearLayers();
-      if (!showProps || z < 13.5) return;
-
-      const [vx0, vy0, vx1, vy1] = viewRect();
-      const placed = [];
-      // Reserve dot boxes for visible properties so labels never cover a neighboring dot
-      const visible = [];
-      for (const item of PROP_ITEMS) {
-        const pt = map.latLngToLayerPoint([item.p.lat, item.p.lng]);
-        if (pt.x < vx0 - 40 || pt.x > vx1 + 40 || pt.y < vy0 - 20 || pt.y > vy1 + 20) continue;
-        visible.push({ item, pt });
-        placed.push([pt.x - 7, pt.y - 7, pt.x + 7, pt.y + 7]);
+    function clusterItems(items, radius) {
+      const pts = items.map(item => ({ item, pt: map.latLngToLayerPoint([item.p.lat, item.p.lng]) }));
+      const used = new Set();
+      const out = [];
+      for (let i = 0; i < pts.length; i++) {
+        if (used.has(i)) continue;
+        const group = [pts[i]];
+        used.add(i);
+        for (let j = i + 1; j < pts.length; j++) {
+          if (used.has(j)) continue;
+          if (pts[i].pt.distanceTo(pts[j].pt) <= radius) { group.push(pts[j]); used.add(j); }
+        }
+        out.push(group);
       }
+      return out;
+    }
 
+    function clusterLatLng(group) {
+      let lat = 0, lng = 0;
+      for (const g of group) { lat += g.item.p.lat; lng += g.item.p.lng; }
+      return L.latLng(lat / group.length, lng / group.length);
+    }
+
+    function clusterColor(group) {
+      const ids = new Set(group.map(g => g.item.p.g));
+      if (ids.size === 1) return group[0].item.grp.color;
+      return "#334155";
+    }
+
+    function zoomToCluster(group) {
+      const b = L.latLngBounds(group.map(g => [g.item.p.lat, g.item.p.lng]));
+      const pad = IS_MOBILE
+        ? { paddingTopLeft: [24, 56], paddingBottomRight: [24, 110], maxZoom: 17 }
+        : { paddingTopLeft: [40, 40], paddingBottomRight: [40, 40], maxZoom: 17 };
+      if (b.getNorthEast().distanceTo(b.getSouthWest()) < 30) {
+        map.setView(b.getCenter(), Math.min(17, map.getZoom() + 2), { animate: true });
+      } else {
+        map.fitBounds(b, pad);
+      }
+    }
+
+    function refreshPropLabels(singles) {
+      propLabelLayer.clearLayers();
+      const z = map.getZoom();
+      if (!singles.length || z < 13.5) return;
+      let [vx0, vy0, vx1, vy1] = viewRect();
+      // Keep name pills off zoom / locate / layers / compass controls
+      vx1 -= IS_MOBILE ? 56 : 50;
+      vy0 += IS_MOBILE ? 6 : 4;
+      if (IS_MOBILE) vx0 += 48;
+      const placed = [];
+      const visible = [];
+      for (const item of singles) {
+        const pt = map.latLngToLayerPoint([item.p.lat, item.p.lng]);
+        if (pt.x < vx0 - 50 || pt.x > vx1 + 50 || pt.y < vy0 - 50 || pt.y > vy1 + 20) continue;
+        visible.push({ item, pt });
+        // Reserve the teardrop pin so labels never sit on top of it
+        placed.push([pt.x - 18, pt.y - 42, pt.x + 18, pt.y + 4]);
+      }
       const overlaps = (a, b) => !(a[2] <= b[0] || a[0] >= b[2] || a[3] <= b[1] || a[1] >= b[3]);
       for (const { item, pt } of visible) {
         const w = item.wPx, h = item.hPx;
         const candidates = [
-          { lx: 10, ty: 0, tx: "translate(0, -50%)", box: [pt.x + 10, pt.y - h / 2, pt.x + 10 + w, pt.y + h / 2] },
-          { lx: -10, ty: 0, tx: "translate(-100%, -50%)", box: [pt.x - 10 - w, pt.y - h / 2, pt.x - 10, pt.y + h / 2] },
-          { lx: 0, ty: -10, tx: "translate(-50%, -100%)", box: [pt.x - w / 2, pt.y - 10 - h, pt.x + w / 2, pt.y - 10] },
-          { lx: 0, ty: 10, tx: "translate(-50%, 0)", box: [pt.x - w / 2, pt.y + 10, pt.x + w / 2, pt.y + 10 + h] },
+          { lx: 18, ty: -22, tx: "translate(0, -50%)", box: [pt.x + 18, pt.y - 22 - h / 2, pt.x + 18 + w, pt.y - 22 + h / 2] },
+          { lx: -18, ty: -22, tx: "translate(-100%, -50%)", box: [pt.x - 18 - w, pt.y - 22 - h / 2, pt.x - 18, pt.y - 22 + h / 2] },
+          { lx: 0, ty: -42, tx: "translate(-50%, -100%)", box: [pt.x - w / 2, pt.y - 42 - h, pt.x + w / 2, pt.y - 42] },
+          { lx: 0, ty: 8, tx: "translate(-50%, 0)", box: [pt.x - w / 2, pt.y + 8, pt.x + w / 2, pt.y + 8 + h] },
         ];
-        // Pick first candidate inside viewport that doesn't collide
         for (const c of candidates) {
           const [bx0, by0, bx1, by1] = c.box;
           if (bx0 < vx0 || bx1 > vx1 || by0 < vy0 || by1 > vy1) continue;
@@ -921,6 +1053,51 @@
       }
     }
 
+    function refreshPropDisplay() {
+      const show = togProperties.checked;
+      const z = map.getZoom();
+      document.getElementById("map").classList.toggle("prop-hi", show && z >= 14);
+      propLayer.clearLayers();
+      propLabelLayer.clearLayers();
+      if (!show) return;
+      if (!map.hasLayer(propLayer)) propLayer.addTo(map);
+      if (!map.hasLayer(propLabelLayer)) propLabelLayer.addTo(map);
+
+      const baseR = IS_MOBILE ? 56 : 52;
+      const radius = z >= 16 ? 16 : z >= 15 ? Math.round(baseR * 0.62) : z >= 14 ? Math.round(baseR * 0.88) : baseR;
+      const groups = clusterItems(PROP_ITEMS, radius);
+      const singles = [];
+      for (const group of groups) {
+        if (group.length === 1) {
+          const item = group[0].item;
+          item.marker.addTo(propLayer);
+          singles.push(item);
+        } else {
+          const n = group.length;
+          const sizeCls = n >= 10 ? "xl" : (n >= 5 ? "lg" : "");
+          const size = IS_MOBILE
+            ? (n >= 10 ? 52 : (n >= 5 ? 46 : 40))
+            : (n >= 10 ? 48 : (n >= 5 ? 42 : 36));
+          const color = clusterColor(group);
+          const ll = clusterLatLng(group);
+          const cm = L.marker(ll, {
+            icon: L.divIcon({
+              className: "prop-cluster-icon",
+              html: `<div class="prop-cluster ${sizeCls}" style="--c:${color}" title="${n} 个房源">${n}</div>`,
+              iconSize: [size, size],
+              iconAnchor: [size / 2, size / 2],
+            }),
+            pane: "propPins",
+            zIndexOffset: 800,
+          });
+          cm.on("click", e => { L.DomEvent.stopPropagation(e); zoomToCluster(group); });
+          cm.addTo(propLayer);
+        }
+      }
+      refreshPropLabels(singles);
+      if (activeItem && propLayer.hasLayer(activeItem.marker)) setActiveItem(activeItem, false);
+    }
+
     const togProperties = document.getElementById("togProperties");
     function syncProperties() {
       if (togProperties.checked) {
@@ -929,16 +1106,17 @@
       } else {
         if (map.hasLayer(propLayer)) map.removeLayer(propLayer);
         if (map.hasLayer(propLabelLayer)) map.removeLayer(propLabelLayer);
+        if (activeItem) { activeItem.marker.closePopup(); setActiveItem(null, false); }
       }
-      refreshPropLabels();
+      refreshPropDisplay();
     }
     togProperties.addEventListener("change", syncProperties);
 
-    map.on("moveend", refreshPropLabels);
-    window.addEventListener("resize", refreshPropLabels);
-    map.whenReady(refreshPropLabels);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshPropLabels);
-    setTimeout(refreshPropLabels, 320);
+    map.on("moveend", refreshPropDisplay);
+    window.addEventListener("resize", refreshPropDisplay);
+    map.whenReady(refreshPropDisplay);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshPropDisplay);
+    setTimeout(refreshPropDisplay, 320);
   </script>
 </body>
 </html>
