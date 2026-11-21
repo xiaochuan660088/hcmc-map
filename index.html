@@ -134,6 +134,66 @@
       box-shadow: 0 1px 5px rgba(0,0,0,.35); border: 0; padding: 0; color: #0b6e99;
     }
     .locate-btn.busy { opacity: .55; }
+    /* Compass control */
+    .compass-ctl {
+      width: 44px; height: 44px; background: rgba(255,255,255,.94);
+      border-radius: 10px; box-shadow: 0 1px 5px rgba(0,0,0,.35);
+      display: flex; align-items: center; justify-content: center;
+      user-select: none; cursor: default;
+    }
+    .compass-ctl svg { width: 34px; height: 34px; display: block; }
+    /* Property markers & labels */
+    .prop-marker { background: none; border: 0; }
+    .prop-hit {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      transform: translate(-14px, -14px); cursor: pointer;
+    }
+    .prop-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.48);
+      transition: transform .15s ease, width .15s ease, height .15s ease;
+    }
+    .prop-hit:hover .prop-dot { transform: scale(1.3); }
+    .prop-zoom-in .prop-dot { width: 12px; height: 12px; }
+    .prop-lbl-wrap { background: none; border: 0; overflow: visible; pointer-events: none; }
+    .prop-lbl {
+      position: absolute; left: 0; top: 0;
+      white-space: nowrap; font-size: 11px; font-weight: 600; line-height: 1.2;
+      color: #182026; background: rgba(255,255,255,.93);
+      padding: 2px 6px; border-radius: 5px;
+      border-left: 3px solid var(--c, #0b6e99);
+      box-shadow: 0 1px 4px rgba(0,0,0,.24);
+      pointer-events: none;
+    }
+    .prop-legend {
+      display: flex; flex-wrap: wrap; gap: 5px 10px; margin: 4px 0 8px; font-size: 11.5px;
+    }
+    .prop-leg-item { display: inline-flex; align-items: center; gap: 5px; }
+    .prop-leg-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.22); flex: 0 0 10px;
+    }
+    .prop-dir { margin: 6px 0 8px; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.72); }
+    .prop-dir summary {
+      padding: 7px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+      list-style: none; display: flex; justify-content: space-between; align-items: center; color: #24303c;
+    }
+    .prop-dir summary::-webkit-details-marker { display: none; }
+    .prop-dir[open] summary { border-bottom: 1px solid var(--line); }
+    .prop-dir-body { max-height: 210px; overflow: auto; padding: 6px 8px 8px; }
+    .prop-grp-title { font-size: 11px; font-weight: 700; color: var(--muted); margin: 6px 0 4px; display: flex; align-items: center; gap: 5px; }
+    .prop-grp-title:first-child { margin-top: 0; }
+    .prop-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .prop-chip {
+      border: 1px solid var(--line); background: #fff; border-radius: 6px;
+      padding: 3px 7px; font: inherit; font-size: 11px; color: var(--ink); cursor: pointer;
+    }
+    .prop-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .popup-badge {
+      display: inline-block; padding: 2px 7px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 6px;
+    }
     @media (max-width: 640px) {
       .panel {
         top: auto; left: 10px; right: 10px; width: auto;
@@ -159,6 +219,12 @@
       .leaflet-bar a { width: 40px !important; height: 40px !important; line-height: 40px !important; font-size: 22px !important; }
       .locate-btn { width: 42px; height: 42px; font-size: 20px; }
       .leaflet-control-layers-toggle { width: 44px !important; height: 44px !important; }
+      .compass-ctl { width: 44px; height: 44px; }
+      .compass-ctl svg { width: 34px; height: 34px; }
+      .prop-dot { width: 11px; height: 11px; }
+      .prop-zoom-in .prop-dot { width: 13px; height: 13px; }
+      .prop-dir summary { padding: 10px; font-size: 13.5px; }
+      .prop-chip { padding: 6px 9px; font-size: 12.5px; }
       .leaflet-popup-content { font-size: 14px; }
       .popup h3 { font-size: 18px; }
       .popup table { font-size: 14px; }
@@ -177,11 +243,18 @@
         <button type="button" id="btnAll">含外围县</button>
       </div>
       <div class="toggles">
+        <label><input type="checkbox" id="togProperties" checked /> 我的房源（52 个楼盘）</label>
         <label><input type="checkbox" id="togDistricts" checked /> 旧城区各郡</label>
         <label><input type="checkbox" id="togWards" /> 第 2 郡坊界（phường）</label>
         <label><input type="checkbox" id="togRural" /> 外围五县（浅色）</label>
         <label><input type="checkbox" id="togAirport" checked /> 新山一机场</label>
       </div>
+      <div class="legend-title">我的房源 · 按区域色标</div>
+      <div class="prop-legend" id="propLegend"></div>
+      <details class="prop-dir" id="propDir">
+        <summary><span>房源楼盘速查（点击飞往定位）</span><span>▾</span></summary>
+        <div class="prop-dir-body" id="propDirBody"></div>
+      </details>
       <div class="legend-title">图例 · 城区 19 郡</div>
       <div class="legend">
         <div class="leg-item"><span class="swatch" style="background:#F2C94C"></span><span class="leg-zh">第1郡</span><span class="leg-vi">Quận 1</span></div>
@@ -267,6 +340,33 @@
     map.getPane("labels").style.pointerEvents = "none";
     L.control.layers(baseMaps, null, { position: "topright", collapsed: true }).addTo(map);
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
+
+    map.createPane("propPins");
+    map.getPane("propPins").style.zIndex = 620;
+    map.createPane("propLabels");
+    map.getPane("propLabels").style.zIndex = 630;
+    map.getPane("propLabels").style.pointerEvents = "none";
+
+    // North Compass control (top-right, below layers button)
+    const CompassCtl = L.Control.extend({
+      options: { position: "topright" },
+      onAdd() {
+        const d = L.DomUtil.create("div", "compass-ctl");
+        d.title = "指北针（正北朝上）";
+        d.setAttribute("aria-label", "指北针：正北朝上");
+        d.innerHTML = `<svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+          <path d="M24 5 L24 8 M24 40 L24 43 M5 24 L8 24 M40 24 L43 24" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round"/>
+          <polygon points="24,10 19,25 24,22 29,25" fill="#dc2626"/>
+          <polygon points="24,38 19,25 24,28 29,25" fill="#94a3b8"/>
+          <circle cx="24" cy="25" r="2" fill="#fff" stroke="#475569" stroke-width="1"/>
+          <text x="24" y="10.2" text-anchor="middle" font-size="8.5" font-weight="700" fill="#dc2626" font-family="sans-serif" dy="-1.2">N</text>
+        </svg>`;
+        L.DomEvent.disableClickPropagation(d);
+        return d;
+      }
+    });
+    new CompassCtl().addTo(map);
 
     function popupHtml(p) {
       const kind = p.kind === "ward" ? "坊（phường）" : (p.kind === "rural_district" ? "县（huyện）" : "郡（quận）");
@@ -626,6 +726,219 @@
       const walk = arr => { if (!arr.length) return false; if (arr[0] instanceof L.LatLng) return test(arr); if (arr[0][0] instanceof L.LatLng) { if (!test(arr[0])) return false; for (let k = 1; k < arr.length; k++) if (test(arr[k])) return false; return true; } return arr.some(walk); };
       return walk(layer.getLatLngs());
     }
+
+    // ---------- Agent Apartment Listings ----------
+    const PROP_GROUPS = [
+      { id: "d1", zh: "一郡", vi: "Quận 1", color: "#D97706" },
+      { id: "d2", zh: "二郡", vi: "Quận 2", color: "#0284C7" },
+      { id: "d4", zh: "四郡", vi: "Quận 4", color: "#9333EA" },
+      { id: "bt", zh: "平盛郡", vi: "Bình Thạnh", color: "#DC2626" },
+      { id: "d7", zh: "七郡", vi: "Quận 7（含毗邻芽皮3盘）", color: "#15803D" },
+    ];
+    const GROUP_MAP = Object.fromEntries(PROP_GROUPS.map(g => [g.id, g]));
+
+    const PROPERTIES = [
+      // 一郡
+      { g: "d1", name: "Golden River", sub: "Vinhomes Golden River (Ba Son)", addr: "2 Tôn Đức Thắng, Bến Nghé, Quận 1", lat: 10.786242, lng: 106.710666 },
+      { g: "d1", name: "The Marq", sub: "The Marq Luxury Residences", addr: "29B Nguyễn Đình Chiểu, Đa Kao, Quận 1", lat: 10.787208, lng: 106.699106 },
+      { g: "d1", name: "Grand Marina", sub: "Grand Marina, Saigon (Ba Son)", addr: "2 Tôn Đức Thắng, Bến Nghé, Quận 1", lat: 10.783940, lng: 106.708522 },
+
+      // 二郡
+      { g: "d2", name: "The Opera", sub: "The Opera Residence · Metropole Thủ Thiêm", addr: "Đường D6, Thủ Thiêm, Quận 2", lat: 10.777540, lng: 106.712700 },
+      { g: "d2", name: "The Galleria", sub: "The Galleria Residence · Metropole Thủ Thiêm", addr: "20 Nguyễn Thiện Thành, Thủ Thiêm, Quận 2", lat: 10.778950, lng: 106.713190 },
+      { g: "d2", name: "The Crest", sub: "The Crest Residence · Metropole Thủ Thiêm", addr: "Đường N11, Thủ Thiêm, Quận 2", lat: 10.779100, lng: 106.714570 },
+      { g: "d2", name: "Empire City", sub: "Empire City Thủ Thiêm (Linden / Cove / Narra)", addr: "2B Mai Chí Thọ, Thủ Thiêm, Quận 2", lat: 10.768750, lng: 106.713230 },
+      { g: "d2", name: "The River Thủ Thiêm", sub: "The River Thủ Thiêm", addr: "23 Trần Bạch Đằng, Thủ Thiêm, Quận 2", lat: 10.782530, lng: 106.719100 },
+      { g: "d2", name: "Zeit River", sub: "Thủ Thiêm Zeit River (Lô 3-11)", addr: "Nguyễn Cơ Thạch & Trần Bạch Đằng, Thủ Thiêm, Quận 2", lat: 10.781100, lng: 106.720000 },
+      { g: "d2", name: "New City", sub: "New City Thủ Thiêm", addr: "17 Mai Chí Thọ, An Khánh, Quận 2", lat: 10.781304, lng: 106.735645 },
+      { g: "d2", name: "The Sun Avenue", sub: "The Sun Avenue (Novaland)", addr: "28 Mai Chí Thọ, An Phú, Quận 2", lat: 10.784174, lng: 106.746177 },
+      { g: "d2", name: "Diamond Island", sub: "Đảo Kim Cương · 钻石岛", addr: "Số 1 Đường 104, Bình Trưng Tây, Quận 2", lat: 10.777015, lng: 106.746843 },
+      { g: "d2", name: "Feliz en Vista", sub: "Feliz en Vista (CapitaLand)", addr: "01 Phan Văn Đáng, Thạnh Mỹ Lợi, Quận 2", lat: 10.777816, lng: 106.755710 },
+      { g: "d2", name: "One Verandah", sub: "One Verandah (Mapletree)", addr: "Bát Nàn / Tạ Hiện, Thạnh Mỹ Lợi, Quận 2", lat: 10.776493, lng: 106.750850 },
+      { g: "d2", name: "Vista Verde", sub: "Vista Verde (CapitaLand)", addr: "02 Phan Văn Đáng, Thạnh Mỹ Lợi, Quận 2", lat: 10.776708, lng: 106.756627 },
+      { g: "d2", name: "Victoria Village", sub: "Victoria Village (Novaland)", addr: "266 Trương Văn Bang, Thạnh Mỹ Lợi, Quận 2", lat: 10.771220, lng: 106.760840 },
+      { g: "d2", name: "Lumière Riverside", sub: "Lumière Riverside (Masterise Homes)", addr: "259 Võ Nguyên Giáp, An Phú, Quận 2", lat: 10.803650, lng: 106.748600 },
+      { g: "d2", name: "Masteri Thảo Điền", sub: "Masteri Thảo Điền", addr: "159 Võ Nguyên Giáp, Thảo Điền, Quận 2", lat: 10.802649, lng: 106.742399 },
+      { g: "d2", name: "Masteri An Phú", sub: "Masteri An Phú", addr: "191 Võ Nguyên Giáp, An Phú, Quận 2", lat: 10.803665, lng: 106.747227 },
+      { g: "d2", name: "The Estella", sub: "The Estella An Phú", addr: "Đường số 25, An Phú, Quận 2", lat: 10.800693, lng: 106.748564 },
+      { g: "d2", name: "Estella Heights", sub: "Estella Heights (Keppel Land)", addr: "88 Song Hành, An Phú, Quận 2", lat: 10.801543, lng: 106.748654 },
+
+      // 四郡
+      { g: "d4", name: "Saigon Royal", sub: "Saigon Royal Residence", addr: "34-35 Bến Vân Đồn, Phường 12, Quận 4", lat: 10.766721, lng: 106.703845 },
+      { g: "d4", name: "The Tresor", sub: "The Tresor Residence", addr: "39 Bến Vân Đồn, Phường 12, Quận 4", lat: 10.766332, lng: 106.703628 },
+      { g: "d4", name: "Icon 56", sub: "Icon 56 Apartment", addr: "56 Bến Vân Đồn, Phường 12, Quận 4", lat: 10.765810, lng: 106.703124 },
+      { g: "d4", name: "RiverGate", sub: "RiverGate Residence", addr: "151-155 Bến Vân Đồn, Phường 6, Quận 4", lat: 10.762786, lng: 106.698649 },
+      { g: "d4", name: "Millennium", sub: "Masteri Millennium", addr: "132 Bến Vân Đồn, Phường 6, Quận 4", lat: 10.763170, lng: 106.699640 },
+      { g: "d4", name: "The GoldView", sub: "The GoldView", addr: "346 Bến Vân Đồn, Phường 1, Quận 4", lat: 10.756260, lng: 106.691810 },
+      { g: "d4", name: "Galaxy 9", sub: "Galaxy 9 Apartment", addr: "9 Nguyễn Khoái, Phường 1, Quận 4", lat: 10.755577, lng: 106.693998 },
+      { g: "d4", name: "De La Sol", sub: "De La Sol (CapitaLand)", addr: "1 Tôn Thất Thuyết, Phường 1, Quận 4", lat: 10.753611, lng: 106.692825 },
+
+      // 平盛郡
+      { g: "bt", name: "Landmark 81", sub: "Vinhomes Central Park · Landmark", addr: "720A Điện Biên Phủ, Phường 22, Bình Thạnh", lat: 10.795085, lng: 106.721914 },
+      { g: "bt", name: "City Garden", sub: "City Garden Apartment", addr: "59 Ngô Tất Tố, Phường 21, Bình Thạnh", lat: 10.793508, lng: 106.712861 },
+
+      // 七郡（含紧邻七郡边界的芽皮3个热门楼盘）
+      { g: "d7", name: "Sunrise City", sub: "Sunrise City (South / Central / North)", addr: "23-25-27 Nguyễn Hữu Thọ, Tân Hưng, Quận 7", lat: 10.741474, lng: 106.700536 },
+      { g: "d7", name: "Eco Green", sub: "Eco Green Saigon", addr: "107 Nguyễn Văn Linh, Tân Thuận Tây, Quận 7", lat: 10.749214, lng: 106.723934 },
+      { g: "d7", name: "Lavida Plus", sub: "Lavida Plus", addr: "Nguyễn Văn Linh & Nguyễn Hữu Thọ, Tân Phong, Quận 7", lat: 10.727115, lng: 106.701655 },
+      { g: "d7", name: "Sunshine Sky City", sub: "Sunshine Sky City", addr: "23 Đường Tân Thuận / Phú Thuận, Quận 7", lat: 10.729664, lng: 106.730485 },
+      { g: "d7", name: "Sky Garden", sub: "Phú Mỹ Hưng · Sky Garden 1–3", addr: "Nguyễn Văn Linh, Tân Phong, Quận 7", lat: 10.729175, lng: 106.704839 },
+      { g: "d7", name: "Celesta Rise", sub: "Celesta Rise (Keppel & Phú Long)", addr: "Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）", note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），位于第7郡南侧延伸段", lat: 10.708532, lng: 106.709166 },
+      { g: "d7", name: "Sunrise Riverside", sub: "Sunrise Riverside (Novaland)", addr: "Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）", note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），隔桥即第7郡", lat: 10.722784, lng: 106.703405 },
+      { g: "d7", name: "Saigon South", sub: "Saigon South Residences (Phú Mỹ Hưng)", addr: "113A Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè（紧邻七郡）", note: "行政界线属芽皮县（Phước Kiển, Nhà Bè），紧邻第7郡富美兴", lat: 10.720704, lng: 106.703640 },
+      { g: "d7", name: "Skyline", sub: "An Gia Skyline", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7", lat: 10.715658, lng: 106.740853 },
+      { g: "d7", name: "Sky 89", sub: "An Gia Sky 89", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7", lat: 10.714486, lng: 106.742494 },
+      { g: "d7", name: "River Panorama", sub: "An Gia River Panorama", addr: "89 Hoàng Quốc Việt, Phú Thuận, Quận 7", lat: 10.714916, lng: 106.741637 },
+      { g: "d7", name: "Riviera Point", sub: "Riviera Point · 含 The View / The Infinity", addr: "2 Nguyễn Văn Tưởng, Tân Phú, Quận 7", lat: 10.732210, lng: 106.729060 },
+      { g: "d7", name: "Riverside Residence", sub: "Phú Mỹ Hưng · Riverside Residence", addr: "Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.719523, lng: 106.726452 },
+      { g: "d7", name: "Scenic Valley", sub: "Phú Mỹ Hưng · Scenic Valley 1 & 2", addr: "Tôn Dật Tiên, Tân Phú, Quận 7", lat: 10.731125, lng: 106.716668 },
+      { g: "d7", name: "Midtown", sub: "Phú Mỹ Hưng Midtown (The Grande–The Peak)", addr: "Đường số 16 (Sakura Park), Tân Phú, Quận 7", lat: 10.724840, lng: 106.729850 },
+      { g: "d7", name: "Hưng Phúc", sub: "Hưng Phúc · Happy Residence (& Premier)", addr: "Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.717717, lng: 106.728147 },
+      { g: "d7", name: "Nam Phúc", sub: "Nam Phúc · Le Jardin (Phú Mỹ Hưng)", addr: "Đường C, Nam Viên, Tân Phú, Quận 7", lat: 10.720699, lng: 106.729434 },
+      { g: "d7", name: "The Antonia", sub: "Phú Mỹ Hưng · The Antonia", addr: "Lô S6-1 Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.719689, lng: 106.727834 },
+      { g: "d7", name: "The Aurora", sub: "Phú Mỹ Hưng · The Aurora", addr: "Lô S13-2 Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.717766, lng: 106.729056 },
+      { g: "d7", name: "The Ascentia", sub: "Phú Mỹ Hưng · The Ascentia", addr: "Lô S4-3 Nguyễn Lương Bằng, Tân Phú, Quận 7", lat: 10.720788, lng: 106.727182 },
+      { g: "d7", name: "Cardinal Court", sub: "Phú Mỹ Hưng · Cardinal Court", addr: "Lô C13B Phú Mỹ Hưng, Tân Phú, Quận 7", lat: 10.728128, lng: 106.724424 },
+    ];
+
+    const propLayer = L.layerGroup();
+    const propLabelLayer = L.layerGroup();
+    const PROP_ITEMS = [];
+
+    for (const p of PROPERTIES) {
+      const grp = GROUP_MAP[p.g];
+      const icon = L.divIcon({
+        className: "prop-marker",
+        html: `<div class="prop-hit" title="${p.name}"><div class="prop-dot" style="background:${grp.color}"></div></div>`,
+        iconSize: [0, 0],
+      });
+      const marker = L.marker([p.lat, p.lng], { icon, pane: "propPins", zIndexOffset: 500 });
+      const noteRow = p.note ? `<tr><td>区位说明</td><td>${p.note}</td></tr>` : "";
+      marker.bindPopup(`<div class="popup">
+        <span class="popup-badge" style="background:${grp.color}">${grp.zh} · ${grp.vi.split("（")[0]}</span>
+        <h3>${p.name}</h3>
+        <div class="vi">${p.sub}</div>
+        <table>
+          <tr><td>地址</td><td>${p.addr}</td></tr>
+          ${noteRow}
+        </table>
+      </div>`, { maxWidth: 270, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, IS_MOBILE ? 110 : 20] });
+      marker.addTo(propLayer);
+
+      const lblMarker = L.marker([p.lat, p.lng], {
+        icon: L.divIcon({
+          className: "prop-lbl-wrap",
+          html: `<div class="prop-lbl" style="--c:${grp.color}">${p.name}</div>`,
+          iconSize: [0, 0],
+        }),
+        interactive: false, keyboard: false, pane: "propLabels",
+      });
+      const wPx = Math.ceil(textW(p.name, 600) * 11) + 18;
+      PROP_ITEMS.push({ p, grp, marker, lblMarker, wPx, hPx: 20 });
+    }
+    propLayer.addTo(map);
+    propLabelLayer.addTo(map);
+
+    // Populate property color legend & quick-jump directory
+    const propLegendEl = document.getElementById("propLegend");
+    const propDirBody = document.getElementById("propDirBody");
+    for (const g of PROP_GROUPS) {
+      const list = PROP_ITEMS.filter(x => x.p.g === g.id);
+      const leg = document.createElement("div");
+      leg.className = "prop-leg-item";
+      leg.innerHTML = `<span class="prop-leg-dot" style="background:${g.color}"></span><span>${g.zh} (${list.length})</span>`;
+      propLegendEl.appendChild(leg);
+
+      const gt = document.createElement("div");
+      gt.className = "prop-grp-title";
+      gt.innerHTML = `<span class="prop-leg-dot" style="background:${g.color}"></span><span>${g.zh} · ${g.vi}</span>`;
+      propDirBody.appendChild(gt);
+
+      const chips = document.createElement("div");
+      chips.className = "prop-chips";
+      for (const item of list) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "prop-chip";
+        b.textContent = item.p.name;
+        b.addEventListener("click", () => {
+          if (!togProperties.checked) { togProperties.checked = true; syncProperties(); }
+          if (IS_MOBILE && !panel.classList.contains("collapsed")) togglePanel();
+          map.setView([item.p.lat, item.p.lng], Math.max(map.getZoom(), 16), { animate: true });
+          setTimeout(() => item.marker.openPopup(), 260);
+        });
+        chips.appendChild(b);
+      }
+      propDirBody.appendChild(chips);
+    }
+
+    // Smart collision-free property name labels at z >= 13.5
+    function refreshPropLabels() {
+      const showProps = map.hasLayer(propLayer);
+      const z = map.getZoom();
+      document.getElementById("map").classList.toggle("prop-zoom-in", z >= 14.5);
+      propLabelLayer.clearLayers();
+      if (!showProps || z < 13.5) return;
+
+      const [vx0, vy0, vx1, vy1] = viewRect();
+      const placed = [];
+      // Reserve dot boxes for visible properties so labels never cover a neighboring dot
+      const visible = [];
+      for (const item of PROP_ITEMS) {
+        const pt = map.latLngToLayerPoint([item.p.lat, item.p.lng]);
+        if (pt.x < vx0 - 40 || pt.x > vx1 + 40 || pt.y < vy0 - 20 || pt.y > vy1 + 20) continue;
+        visible.push({ item, pt });
+        placed.push([pt.x - 7, pt.y - 7, pt.x + 7, pt.y + 7]);
+      }
+
+      const overlaps = (a, b) => !(a[2] <= b[0] || a[0] >= b[2] || a[3] <= b[1] || a[1] >= b[3]);
+      for (const { item, pt } of visible) {
+        const w = item.wPx, h = item.hPx;
+        const candidates = [
+          { lx: 10, ty: 0, tx: "translate(0, -50%)", box: [pt.x + 10, pt.y - h / 2, pt.x + 10 + w, pt.y + h / 2] },
+          { lx: -10, ty: 0, tx: "translate(-100%, -50%)", box: [pt.x - 10 - w, pt.y - h / 2, pt.x - 10, pt.y + h / 2] },
+          { lx: 0, ty: -10, tx: "translate(-50%, -100%)", box: [pt.x - w / 2, pt.y - 10 - h, pt.x + w / 2, pt.y - 10] },
+          { lx: 0, ty: 10, tx: "translate(-50%, 0)", box: [pt.x - w / 2, pt.y + 10, pt.x + w / 2, pt.y + 10 + h] },
+        ];
+        // Pick first candidate inside viewport that doesn't collide
+        for (const c of candidates) {
+          const [bx0, by0, bx1, by1] = c.box;
+          if (bx0 < vx0 || bx1 > vx1 || by0 < vy0 || by1 > vy1) continue;
+          if (placed.some(pbox => overlaps(c.box, pbox))) continue;
+          placed.push(c.box);
+          item.lblMarker.addTo(propLabelLayer);
+          const el = item.lblMarker.getElement();
+          if (el) {
+            const inner = el.firstElementChild;
+            if (inner) {
+              inner.style.left = c.lx + "px";
+              inner.style.top = c.ty + "px";
+              inner.style.transform = c.tx;
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    const togProperties = document.getElementById("togProperties");
+    function syncProperties() {
+      if (togProperties.checked) {
+        if (!map.hasLayer(propLayer)) propLayer.addTo(map);
+        if (!map.hasLayer(propLabelLayer)) propLabelLayer.addTo(map);
+      } else {
+        if (map.hasLayer(propLayer)) map.removeLayer(propLayer);
+        if (map.hasLayer(propLabelLayer)) map.removeLayer(propLabelLayer);
+      }
+      refreshPropLabels();
+    }
+    togProperties.addEventListener("change", syncProperties);
+
+    map.on("moveend", refreshPropLabels);
+    window.addEventListener("resize", refreshPropLabels);
+    map.whenReady(refreshPropLabels);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshPropLabels);
+    setTimeout(refreshPropLabels, 320);
   </script>
 </body>
 </html>
