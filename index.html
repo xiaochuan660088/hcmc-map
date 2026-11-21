@@ -388,7 +388,7 @@
     map.createPane("propPins");
     map.getPane("propPins").style.zIndex = 620;
     map.createPane("propLabels");
-    map.getPane("propLabels").style.zIndex = 630;
+    map.getPane("propLabels").style.zIndex = 610;
     map.getPane("propLabels").style.pointerEvents = "none";
 
     // North Compass control (top-right, below layers button)
@@ -1006,7 +1006,7 @@
       }
     }
 
-    function refreshPropLabels(singles) {
+    function refreshPropLabels(singles, clusterBoxes) {
       propLabelLayer.clearLayers();
       const z = map.getZoom();
       if (!singles.length || z < 13.5) return;
@@ -1015,7 +1015,7 @@
       vx1 -= IS_MOBILE ? 56 : 50;
       vy0 += IS_MOBILE ? 6 : 4;
       if (IS_MOBILE) vx0 += 48;
-      const placed = [];
+      const placed = (clusterBoxes || []).slice();
       const visible = [];
       for (const item of singles) {
         const pt = map.latLngToLayerPoint([item.p.lat, item.p.lng]);
@@ -1067,6 +1067,8 @@
       const radius = z >= 16 ? 16 : z >= 15 ? Math.round(baseR * 0.62) : z >= 14 ? Math.round(baseR * 0.88) : baseR;
       const groups = clusterItems(PROP_ITEMS, radius);
       const singles = [];
+      const clusterBoxes = [];
+      const pad = 4;
       for (const group of groups) {
         if (group.length === 1) {
           const item = group[0].item;
@@ -1092,9 +1094,12 @@
           });
           cm.on("click", e => { L.DomEvent.stopPropagation(e); zoomToCluster(group); });
           cm.addTo(propLayer);
+          const cpt = map.latLngToLayerPoint(ll);
+          const half = size / 2 + pad;
+          clusterBoxes.push([cpt.x - half, cpt.y - half, cpt.x + half, cpt.y + half]);
         }
       }
-      refreshPropLabels(singles);
+      refreshPropLabels(singles, clusterBoxes);
       if (activeItem && propLayer.hasLayer(activeItem.marker)) setActiveItem(activeItem, false);
     }
 
