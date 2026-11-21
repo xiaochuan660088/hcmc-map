@@ -18,7 +18,8 @@
       --accent: #0b6e99;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: #e8eef2; }
+    html, body { margin: 0; height: 100%; background: #e8eef2; overflow: hidden; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+    body { height: 100dvh; }
     body {
       font-family: "Noto Sans SC", "Be Vietnam Pro", "PingFang SC", "Microsoft YaHei", sans-serif;
       color: var(--ink);
@@ -112,6 +113,7 @@
     .ward-label { font-size: 10px; font-weight: 600; color: #14394d; }
     .rural-label { font-size: 11px; color: #444; opacity: .9; }
     .airport-label {
+      white-space: nowrap !important;
       font-size: 11px; color: #8a1c1c; font-weight: 700;
     }
     .leaflet-popup-content-wrapper {
@@ -124,9 +126,40 @@
     .popup td:first-child { color: #667; width: 5.5em; }
     .leaflet-control-layers { border-radius: 10px !important; }
     .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar { border: 0; }
+    .locate-btn {
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      background: #fff; border-radius: 6px; cursor: pointer; font-size: 18px; line-height: 1;
+      box-shadow: 0 1px 5px rgba(0,0,0,.35); border: 0; padding: 0; color: #0b6e99;
+    }
+    .locate-btn.busy { opacity: .55; }
     @media (max-width: 640px) {
-      .panel { top: auto; bottom: 12px; left: 12px; right: 12px; width: auto; max-height: 42vh; }
-      .legend { grid-template-columns: 1fr 1fr; }
+      .panel {
+        top: auto; left: 10px; right: 10px; width: auto;
+        bottom: calc(22px + env(safe-area-inset-bottom));
+        max-height: 62dvh; padding: 12px 14px 14px;
+        -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      }
+      .panel h1 { font-size: 16px; padding-right: 40px; cursor: pointer; }
+      .panel.collapsed { left: 10px; right: 10px; width: auto; padding: 12px 52px 12px 14px; }
+      .panel.collapsed h1 { font-size: 15px; }
+      .panel.collapsed h1::after { content: "  · 图例 / 图层"; font-weight: 400; font-size: 12px; color: var(--muted); }
+      .collapse-btn { top: 4px; right: 4px; width: 44px; height: 44px; font-size: 20px; }
+      .toolbar button { padding: 10px 8px; font-size: 14px; }
+      .toggles { gap: 2px; font-size: 15px; }
+      .toggles label { min-height: 40px; }
+      .toggles input { width: 20px; height: 20px; }
+      .legend { grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+      .leg-item { font-size: 13px; }
+      .leg-vi { font-size: 11.5px; }
+      .sub { font-size: 12.5px !important; }
+      .note { font-size: 11.5px; }
+      .leaflet-control-scale { margin-bottom: calc(84px + env(safe-area-inset-bottom)) !important; }
+      .leaflet-bar a { width: 40px !important; height: 40px !important; line-height: 40px !important; font-size: 22px !important; }
+      .locate-btn { width: 42px; height: 42px; font-size: 20px; }
+      .leaflet-control-layers-toggle { width: 44px !important; height: 44px !important; }
+      .leaflet-popup-content { font-size: 14px; }
+      .popup h3 { font-size: 18px; }
+      .popup table { font-size: 14px; }
     }
   </style>
 </head>
@@ -134,7 +167,7 @@
   <div id="map"></div>
   <aside class="panel" id="panel">
     <button class="collapse-btn" id="collapseBtn" title="折叠/展开" aria-label="折叠面板">▾</button>
-    <h1>胡志明市旧郡地图</h1>
+    <h1 id="panelTitle">胡志明市旧郡地图</h1>
     <div class="panel-body">
       <p class="sub">旧城区行政界线（2021 年合并前）：第 1–12 郡仍各自独立，守德、第 2、第 9 郡尚未合并为守德市。2025 年 7 月起越南已取消郡级建制，本图保留旧界，供房地产区位对照。</p>
       <div class="toolbar">
@@ -208,8 +241,15 @@
       maxZoom: 19, attribution: osmAttr
     });
 
+    const IS_MOBILE = window.matchMedia("(max-width: 640px)").matches;
+    if (IS_MOBILE) {
+      document.getElementById("panel").classList.add("collapsed");
+      document.getElementById("collapseBtn").textContent = "▴";
+    }
     const map = L.map("map", {
       zoomControl: true,
+      zoomSnap: 0.25,
+      tap: true,
       preferCanvas: true,
       layers: [baseRoad],
     });
@@ -311,7 +351,7 @@
     const urbanLayer = L.geoJSON(urban, {
       style: styleDistrict,
       onEachFeature(feature, layer) {
-        layer.bindPopup(popupHtml(feature.properties), { maxWidth: 260 });
+        layer.bindPopup(popupHtml(feature.properties), { maxWidth: 260, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, IS_MOBILE ? 110 : 20] });
         bindLabel(layer, feature, "district-label", 11);
         layer.on("mouseover", () => layer.setStyle({ weight: 2.6, fillOpacity: 0.7 }));
         layer.on("mouseout", () => urbanLayer.resetStyle(layer));
@@ -321,7 +361,7 @@
     const ruralLayer = L.geoJSON(rural, {
       style: styleRural,
       onEachFeature(feature, layer) {
-        layer.bindPopup(popupHtml(feature.properties), { maxWidth: 260 });
+        layer.bindPopup(popupHtml(feature.properties), { maxWidth: 260, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, IS_MOBILE ? 110 : 20] });
         bindLabel(layer, feature, "rural-label", 10);
         layer.on("mouseover", () => layer.setStyle({ weight: 2, fillOpacity: 0.38 }));
         layer.on("mouseout", () => ruralLayer.resetStyle(layer));
@@ -331,7 +371,7 @@
     const wardLayer = L.geoJSON(wards, {
       style: styleWard,
       onEachFeature(feature, layer) {
-        layer.bindPopup(popupHtml(feature.properties), { maxWidth: 260 });
+        layer.bindPopup(popupHtml(feature.properties), { maxWidth: 260, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, IS_MOBILE ? 110 : 20] });
         bindLabel(layer, feature, "ward-label", 13);
         layer.on("mouseover", () => layer.setStyle({ weight: 2.2, fillOpacity: 0.22 }));
         layer.on("mouseout", () => wardLayer.resetStyle(layer));
@@ -357,7 +397,10 @@
     function panelPad() {
       const w = document.getElementById("panel").getBoundingClientRect().width || 320;
       const isMobile = window.innerWidth <= 640;
-      if (isMobile) return { paddingTopLeft: [16, 16], paddingBottomRight: [16, Math.min(320, window.innerHeight * 0.42)] };
+      if (isMobile) {
+        const h = document.getElementById("panel").getBoundingClientRect().height || 60;
+        return { paddingTopLeft: [8, 56], paddingBottomRight: [8, h + 30] };
+      }
       return { paddingTopLeft: [w + 28, 20], paddingBottomRight: [20, 20] };
     }
     function fitUrban() {
@@ -403,10 +446,60 @@
     });
 
     const panel = document.getElementById("panel");
-    document.getElementById("collapseBtn").addEventListener("click", () => {
+    function togglePanel() {
       panel.classList.toggle("collapsed");
-      document.getElementById("collapseBtn").textContent = panel.classList.contains("collapsed") ? "▸" : "▾";
+      const c = panel.classList.contains("collapsed");
+      document.getElementById("collapseBtn").textContent = IS_MOBILE ? (c ? "▴" : "▾") : (c ? "▸" : "▾");
+      if (!c) panel.scrollTop = 0;
+    }
+    document.getElementById("collapseBtn").addEventListener("click", togglePanel);
+    if (IS_MOBILE) {
+      document.getElementById("panelTitle").addEventListener("click", togglePanel);
+      // tapping the map closes the open sheet so the map is usable
+      map.on("click", () => { if (!panel.classList.contains("collapsed")) togglePanel(); });
+      // zoom/fit buttons inside the sheet: close it so the result is visible
+      ["btnUrban", "btnAll"].forEach(id => document.getElementById(id).addEventListener("click", () => {
+        if (!panel.classList.contains("collapsed")) { togglePanel(); setTimeout(id === "btnAll" ? fitAll : fitUrban, 50); }
+      }));
+    }
+    L.DomEvent.disableClickPropagation(panel);
+    L.DomEvent.disableScrollPropagation(panel);
+
+    // "My location" button: handy when standing at a property
+    const LocateCtl = L.Control.extend({
+      options: { position: "topleft" },
+      onAdd() {
+        const b = L.DomUtil.create("button", "locate-btn leaflet-bar");
+        b.type = "button"; b.title = "我的位置"; b.setAttribute("aria-label", "我的位置"); b.textContent = "◎";
+        L.DomEvent.disableClickPropagation(b);
+        b.addEventListener("click", () => {
+          b.classList.add("busy");
+          map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true, timeout: 12000 });
+        });
+        this._b = b; return b;
+      }
     });
+    const locateCtl = new LocateCtl().addTo(map);
+    let meMarker, meCircle;
+    map.on("locationfound", e => {
+      locateCtl._b.classList.remove("busy");
+      if (meMarker) { map.removeLayer(meMarker); map.removeLayer(meCircle); }
+      meCircle = L.circle(e.latlng, { radius: e.accuracy, color: "#1a73e8", weight: 1, fillOpacity: .12, interactive: false }).addTo(map);
+      meMarker = L.circleMarker(e.latlng, { radius: 7, color: "#fff", weight: 2, fillColor: "#1a73e8", fillOpacity: 1 }).addTo(map);
+      let where = "城区范围外";
+      urbanLayer.eachLayer(l => { if (l.getBounds().contains(e.latlng) && pointInLayer(e.latlng, l)) where = l.feature.properties.name_zh + "（" + l.feature.properties.name_vi + "）"; });
+      meMarker.bindPopup(`<div class="popup"><h3>我的位置</h3><table><tr><td>所在旧郡</td><td>${where}</td></tr></table></div>`).openPopup();
+    });
+    map.on("locationerror", () => {
+      locateCtl._b.classList.remove("busy");
+      alert("无法获取位置，请在浏览器设置里允许定位后再试。");
+    });
+    function pointInLayer(ll, layer) {
+      const x = ll.lng, y = ll.lat;
+      const test = ring => { let inside = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const xi = ring[i].lng, yi = ring[i].lat, xj = ring[j].lng, yj = ring[j].lat; if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside; } return inside; };
+      const walk = arr => { if (!arr.length) return false; if (arr[0] instanceof L.LatLng) return test(arr); if (arr[0][0] instanceof L.LatLng) { if (!test(arr[0])) return false; for (let k = 1; k < arr.length; k++) if (test(arr[k])) return false; return true; } return arr.some(walk); };
+      return walk(layer.getLatLngs());
+    }
   </script>
 </body>
 </html>
