@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <title>胡志明地图 · Bản đồ TP.HCM</title>
+  <title>小川胡志明地图 · 微信 xiaochuan660088</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -39,6 +39,9 @@
     .panel h1 {
       font-size: 17px; margin: 0 0 2px; letter-spacing: .02em; font-weight: 700;
     }
+    .panel .wechat { font-size: 12.5px; color: #475569; margin: 0 0 8px; letter-spacing: .01em; }
+    .panel .wechat span { font-weight: 600; color: #15803d; user-select: all; -webkit-user-select: all; }
+    .panel.collapsed .wechat { margin: 2px 0 0; font-size: 12px; }
     .panel .sub {
       margin: 0 0 10px; font-size: 11.5px; color: var(--muted); line-height: 1.45;
     }
@@ -339,7 +342,8 @@
   <div id="map"></div>
   <aside class="panel" id="panel">
     <button class="collapse-btn" id="collapseBtn" title="折叠/展开" aria-label="折叠面板">▾</button>
-    <h1 id="panelTitle">胡志明地图</h1>
+    <h1 id="panelTitle">小川胡志明地图</h1>
+    <div class="wechat">微信 <span>xiaochuan660088</span></div>
     <div class="panel-body">
       <p class="sub">旧城区行政界线（2021 年合并前）：第 1–12 郡仍各自独立，守德、第 2、第 9 郡尚未合并为守德市。2025 年 7 月起越南已取消郡级建制，本图保留旧界，供房地产区位对照。</p>
       <div class="toolbar">
@@ -347,7 +351,7 @@
         <button type="button" id="btnAll">含外围县</button>
       </div>
       <div class="toggles">
-        <label><input type="checkbox" id="togProperties" checked /> 我的房源（52）</label>
+        <label><input type="checkbox" id="togProperties" checked /> 我的房源（54）</label>
         <label><input type="checkbox" id="togPoiMall" checked /> 大型商超</label>
         <label><input type="checkbox" id="togPoiSchool" checked /> 国际学校</label>
         <label><input type="checkbox" id="togPoiHospital" /> 医院</label>
@@ -1035,6 +1039,8 @@
       "de-la-sol": { years: [2023], dev: "凯德 CapitaLand", intro: "邻近第四郡社区商铺，沿 Tôn Thất Thuyết 可到庆会公园。", source: "https://www.capitaland.com/en/about-capitaland/newsroom/news-releases/vietnam/20221/capitaland-development-presents-keys-to-homeowners-of-de-la-sols.html" },
       "landmark-81": { years: [2018], dev: "Vinhomes", intro: "楼下是 Vincom 商场，周边有滨江中央公园、Vinschool 和 Vinmec。", source: "https://storage.googleapis.com/vinhomes-data-02/20180809_HSPL_QDPD_LM81_TB%20Nghiem%20thu%20hoan%20thanh%20cong%20trinh%20G%C4%90%201_1653295554.pdf" },
       "city-garden": { years: [2012, 2018], phase: "分期", dev: "Refico", intro: "社区内有园林，向东可到 Saigon Pearl 国际学校和 Vinmec 医院。", source: "https://wtpartnership.asia/our-team-experience/city-garden-vietnam/" },
+      "sunwah-pearl": { years: [2020], dev: "Bay Water（香港新华集团旗下）", intro: "位于西贡河畔，靠近守添一桥，沿 Nguyễn Hữu Cảnh 往东北可到滨江中央公园。", source: "https://sunwahvietnam.com/vi/du-an-sunwah-pearl-chao-don-nhung-cu-dan-dau-tien.html" },
+      "saigon-pearl": { years: [2010], phase: "一期", dev: "Vietnam Land SSG", intro: "西贡河畔的综合住宅区，设有公寓和别墅，社区内有 Saigon Pearl 国际学校。", source: "https://www.ssggroup.com.vn/su-kien/index.php?function=detail&id=40&module=news" },
       "sunrise-city": { years: [2012, 2015], approximate: true, phase: "分期", dev: "Novaland", intro: "马路对面是 Lotte Mart，沿 Nguyễn Hữu Thọ 有银行和餐饮。", source: "https://www.novaland.com.vn/sunrise-city-du-an-gan-lien-voi-chu-tin" },
       "eco-green": { years: [2020, 2021], approximate: true, phase: "HR1、HR2 栋", dev: "Xuân Mai Corp", intro: "周边有 Eco Green 社区绿地，往南可到 Crescent Mall。", source: "https://xmc.com.vn/storage/bao-cao-thuong-nien/bao-cao-thuong-nien-2021-xmc-final-42022.pdf" },
       "lavida-plus": { dev: "Quốc Cường Gia Lai", intro: "靠近 Nguyễn Văn Linh 与 Nguyễn Hữu Thọ 交叉口，往东可到 SC VivoCity。" },
@@ -1128,6 +1134,10 @@
         lat: 10.795085, lng: 106.721914 },
       { id: "city-garden", g: "bt", name: "City Garden", sub: "City Garden Apartment", addr: "59 Ngô Tất Tố, Phường 21, Bình Thạnh",
         lat: 10.793508, lng: 106.712861 },
+      { id: "sunwah-pearl", g: "bt", name: "Sunwah Pearl", sub: "Sunwah Pearl", addr: "90 Nguyễn Hữu Cảnh, Phường 22, Bình Thạnh",
+        lat: 10.788516, lng: 106.718438 },
+      { id: "saigon-pearl", g: "bt", name: "Saigon Pearl", sub: "Saigon Pearl", addr: "92 Nguyễn Hữu Cảnh, Phường 22, Bình Thạnh",
+        lat: 10.790970, lng: 106.719010 },
 
       // 七郡（含紧邻七郡边界的芽皮3个热门楼盘）
       { id: "sunrise-city", g: "d7", name: "Sunrise City", sub: "Sunrise City (South / Central / North)", addr: "23-25-27 Nguyễn Hữu Thọ, Tân Hưng, Quận 7",
