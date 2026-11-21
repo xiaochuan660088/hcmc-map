@@ -232,6 +232,11 @@
       padding: 3px 7px; font: inherit; font-size: 11px; color: var(--ink); cursor: pointer;
     }
     .prop-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .popup-area { min-width: 168px; }
+    .popup-area table td { vertical-align: middle; padding: 3px 0; line-height: 1.4; }
+    .popup-area table td:first-child { width: 3.2em; white-space: nowrap; }
+    .popup-area table td:last-child { white-space: nowrap; color: #1e293b; }
+    .popup-area table tr + tr td { border-top: 1px dashed #e2e8f0; }
     .popup-badge {
       display: inline-block; padding: 2px 7px; border-radius: 999px;
       font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 6px;
@@ -490,13 +495,13 @@
       const kind = p.kind === "ward" ? "坊（phường）" : (p.kind === "rural_district" ? "县（huyện）" : "郡（quận）");
       const parent = p.parent ? `<tr><td>所属</td><td>${p.parent_zh} / ${p.parent}</td></tr>` : "";
       const recon = p.reconstructed ? "<tr><td>说明</td><td>由守德市减去第2、第9郡重建</td></tr>" : "";
-      return `<div class="popup">
+      return `<div class="popup popup-area">
         <h3>${p.name_zh}</h3>
         <div class="vi">${p.name_vi}</div>
         <table>
           <tr><td>类型</td><td>${kind}</td></tr>
           ${parent}
-          <tr><td>面积</td><td>${p.area_km2.toFixed(2)} km²</td></tr>
+          <tr><td>面积</td><td>${p.area_km2.toFixed(2)}&nbsp;km²</td></tr>
           ${recon}
         </table>
       </div>`;
