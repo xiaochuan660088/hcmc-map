@@ -92,7 +92,16 @@
       text-shadow: 0 0 4px #fff, 0 0 7px #fff, 0 1px 2px #fff;
       color: #1a1a1a; font-weight: 700; line-height: 1.15;
     }
-    .district-label { font-size: 12.5px; }
+    /* District names: size follows zoom; soft shadow + slight transparency so streets underneath stay readable */
+    .district-label { transition: font-size .15s ease, opacity .15s ease; white-space: nowrap !important; }
+    .district-label .zh, .district-label .vi { white-space: nowrap; }
+    .district-label .zh {
+      color: rgba(20, 20, 20, .82);
+      text-shadow: 0 0 2px rgba(255,255,255,.95), 0 0 6px rgba(255,255,255,.75), 1px 2px 4px rgba(0,0,0,.28);
+      letter-spacing: .03em;
+    }
+    .district-label .vi { font-size: .62em !important; }
+    .district-label.far-in { opacity: .6; }
     .district-label .lbl, .ward-label .lbl, .rural-label .lbl {
       display: flex; flex-direction: column; align-items: center;
     }
@@ -118,7 +127,6 @@
     @media (max-width: 640px) {
       .panel { top: auto; bottom: 12px; left: 12px; right: 12px; width: auto; max-height: 42vh; }
       .legend { grid-template-columns: 1fr 1fr; }
-      .district-label { font-size: 11px; }
     }
   </style>
 </head>
@@ -288,6 +296,14 @@
           const extra = (minZ < 13 && area < 8) ? 0.4 : 0;
           el.style.display = z >= (minZ + extra) ? "" : "none";
           el.classList.toggle("show-vi", showVi);
+          if (el.classList.contains("district-label")) {
+            // Font grows with zoom; larger districts get bigger names
+            const areaFactor = Math.min(1.7, Math.max(0.85, Math.sqrt(area / 20)));
+            const base = 12 + Math.max(0, z - 11) * 5;
+            const mobile = window.innerWidth <= 640 ? 0.88 : 1;
+            el.style.fontSize = Math.min(56, base * areaFactor * mobile).toFixed(1) + "px";
+            el.classList.toggle("far-in", z >= 15);
+          }
         }
       });
     }
@@ -354,6 +370,7 @@
     fitUrban();
 
     map.on("zoomend", refreshLabelVisibility);
+    window.addEventListener("resize", refreshLabelVisibility);
     map.whenReady(refreshLabelVisibility);
     setTimeout(refreshLabelVisibility, 300);
 
